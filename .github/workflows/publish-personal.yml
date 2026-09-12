@@ -106,3 +106,5 @@ jobs:
           git push origin repo
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+# Publish trigger: verify the v1.4.4 build reaches the repo branch.
