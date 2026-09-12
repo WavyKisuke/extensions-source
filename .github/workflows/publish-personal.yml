@@ -1,0 +1,107 @@
+name: Publish personal TachiManga repo
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'src/en/mangafire/**'
+      - 'build-logic/**'
+      - 'gradle/**'
+      - 'gradle.properties'
+      - 'settings.gradle.kts'
+      - 'build.gradle.kts'
+      - '.github/workflows/publish-personal.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: personal-tachimanga-repo
+  cancel-in-progress: true
+
+env:
+  VERSION_NAME: 2.0.0
+  VERSION_CODE: 2
+  APK_NAME: tachiyomi-en.mangafire-v2.0.0.apk
+
+jobs:
+  build-and-publish:
+    name: Build and publish MangaFire
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: temurin
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Build MangaFire debug APK
+        run: ./gradlew :src:en:mangafire:assembleDebug --no-daemon
+
+      - name: Prepare extension repository
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK="$(find src/en/mangafire/build/outputs/apk/debug -maxdepth 1 -type f -name '*.apk' | head -n 1)"
+          test -n "$APK"
+
+          rm -rf /tmp/tachimanga-repo
+          git clone --branch repo --single-branch "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" /tmp/tachimanga-repo
+
+          cd /tmp/tachimanga-repo
+          find . -maxdepth 1 -type f -delete
+          rm -rf apk
+          mkdir -p apk
+          cp "$GITHUB_WORKSPACE/$APK" "apk/${APK_NAME}"
+
+          cat > index.json <<EOF
+          [
+            {
+              "name": "MangaFire",
+              "pkg": "eu.kanade.tachiyomi.extension.en.mangafire",
+              "apk": "apk/${APK_NAME}",
+              "lang": "en",
+              "code": ${VERSION_CODE},
+              "version": "${VERSION_NAME}",
+              "nsfw": 1,
+              "sources": [
+                {
+                  "name": "MangaFire",
+                  "lang": "en",
+                  "id": "0",
+                  "baseUrl": "https://mangafire.to",
+                  "versionId": 1
+                }
+              ]
+            }
+          ]
+          EOF
+
+          cp index.json index.min.json
+          cat > README.md <<'EOF'
+          # WavyKisuke TachiManga Extensions
+
+          Personal TachiManga extension repository.
+
+          Repository index: `https://raw.githubusercontent.com/WavyKisuke/extensions-source/repo/index.min.json`
+          EOF
+
+          git config user.name "WavyKisuke"
+          git config user.email "327378209+WavyKisuke@users.noreply.github.com"
+          git add -A
+          git commit -m "Publish MangaFire ${VERSION_NAME}" || exit 0
+          git push origin repo
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
