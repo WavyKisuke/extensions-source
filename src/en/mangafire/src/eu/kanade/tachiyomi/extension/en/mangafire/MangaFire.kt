@@ -237,11 +237,11 @@ abstract class MangaFire : KeiSource(), ConfigurableSource {
             key = PREF_PREFER_OFFICIAL
             title = "Prefer official chapters"
             setDefaultValue(true)
-            isEnabled = mergeChapters
+            setEnabled(mergeChapters)
         }.also(screen::addPreference)
 
         merge.setOnPreferenceChangeListener { _, value ->
-            official.isEnabled = value as Boolean
+            official.setEnabled(value as Boolean)
             true
         }
     }
