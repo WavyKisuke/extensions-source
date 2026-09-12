@@ -2,7 +2,7 @@
   {
     "name": "MangaFire",
     "pkg": "eu.kanade.tachiyomi.extension.en.mangafire",
-    "apk": "apk/tachiyomi-en.mangafire-v2.0.1.apk",
+    "apk": "tachiyomi-en.mangafire-v2.0.1.apk",
     "lang": "en",
     "code": 3,
     "version": "2.0.1",
