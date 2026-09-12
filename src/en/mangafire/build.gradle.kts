@@ -10,6 +10,7 @@ keiyoushi {
     contentWarning = ContentWarning.MIXED
     libVersion = "1.6"
 
+    // Publish trigger marker.
     source {
         name = "MangaFire"
         lang = "en"
