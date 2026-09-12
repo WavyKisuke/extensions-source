@@ -2,18 +2,17 @@
   {
     "name": "MangaFire",
     "pkg": "eu.kanade.tachiyomi.extension.en.mangafire",
-    "apk": "tachiyomi-en.mangafire-v2.0.1.apk",
+    "apk": "tachiyomi-en.mangafire-v1.4.3.apk",
     "lang": "en",
     "code": 3,
-    "version": "2.0.1",
+    "version": "1.4.3",
     "nsfw": 1,
     "sources": [
       {
         "name": "MangaFire",
         "lang": "en",
-        "id": "0",
-        "baseUrl": "https://mangafire.to",
-        "versionId": 1
+        "id": "1",
+        "baseUrl": "https://mangafire.to"
       }
     ]
   }
