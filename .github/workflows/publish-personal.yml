@@ -22,9 +22,9 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  VERSION_NAME: 2.0.1
+  VERSION_NAME: 1.4.3
   VERSION_CODE: 3
-  APK_NAME: tachiyomi-en.mangafire-v2.0.1.apk
+  APK_NAME: tachiyomi-en.mangafire-v1.4.3.apk
 
 jobs:
   build-and-publish:
@@ -82,9 +82,8 @@ jobs:
                 {
                   "name": "MangaFire",
                   "lang": "en",
-                  "id": "0",
-                  "baseUrl": "https://mangafire.to",
-                  "versionId": 1
+                  "id": "1",
+                  "baseUrl": "https://mangafire.to"
                 }
               ]
             }
