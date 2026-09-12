@@ -30,6 +30,7 @@ import okhttp3.Response
 
 @Source
 abstract class MangaFire : KeiSource(), ConfigurableSource {
+    // Build-trigger marker: keep this source on the generated KeiSource API.
     override fun OkHttpClient.Builder.configureClient() = apply {
         rateLimit(2)
         addInterceptor(VrfSigner().interceptor())
