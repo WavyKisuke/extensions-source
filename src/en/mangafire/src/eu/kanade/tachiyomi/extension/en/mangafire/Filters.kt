@@ -20,6 +20,7 @@ open class UriTriSelectFilter(name: String, private val paramIn: String, private
         when (it.state) {
             Filter.TriState.STATE_INCLUDE -> builder.addQueryParameter(paramIn, it.value)
             Filter.TriState.STATE_EXCLUDE -> builder.addQueryParameter(paramEx, it.value)
+            else -> Unit
         }
     }
 }
