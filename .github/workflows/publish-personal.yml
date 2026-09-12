@@ -66,15 +66,14 @@ jobs:
           cd /tmp/tachimanga-repo
           find . -maxdepth 1 -type f -delete
           rm -rf apk
-          mkdir -p apk
-          cp "$GITHUB_WORKSPACE/$APK" "apk/${APK_NAME}"
+          cp "$GITHUB_WORKSPACE/$APK" "${APK_NAME}"
 
           cat > index.json <<EOF
           [
             {
               "name": "MangaFire",
               "pkg": "eu.kanade.tachiyomi.extension.en.mangafire",
-              "apk": "apk/${APK_NAME}",
+              "apk": "${APK_NAME}",
               "lang": "en",
               "code": ${VERSION_CODE},
               "version": "${VERSION_NAME}",
