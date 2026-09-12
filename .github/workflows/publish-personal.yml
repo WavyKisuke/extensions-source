@@ -22,9 +22,9 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  VERSION_NAME: 2.0.0
-  VERSION_CODE: 2
-  APK_NAME: tachiyomi-en.mangafire-v2.0.0.apk
+  VERSION_NAME: 2.0.1
+  VERSION_CODE: 3
+  APK_NAME: tachiyomi-en.mangafire-v2.0.1.apk
 
 jobs:
   build-and-publish:
