@@ -12,6 +12,7 @@
         "name": "MangaFire",
         "lang": "en",
         "id": "1",
+        "versionId": 1,
         "baseUrl": "https://mangafire.to"
       }
     ]
