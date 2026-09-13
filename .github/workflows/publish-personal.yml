@@ -25,7 +25,7 @@ env:
   VERSION_NAME: 1.4.4
   VERSION_CODE: 4
   APK_NAME: tachiyomi-en.mangafire-v1.4.4.apk
-  APK_URL: https://raw.githubusercontent.com/WavyKisuke/extensions-source/repo/tachiyomi-en.mangafire-v1.4.4.apk
+  APK_URL: apk/tachiyomi-en.mangafire-v1.4.4.apk
 
 jobs:
   build-and-publish:
@@ -81,7 +81,8 @@ jobs:
           git checkout -B repo origin/repo
           find . -maxdepth 1 -type f -delete
           rm -rf apk
-          cp "$GITHUB_WORKSPACE/$APK" "${APK_NAME}"
+          mkdir -p apk
+          cp "$GITHUB_WORKSPACE/$APK" "apk/${APK_NAME}"
 
           cat > index.json <<EOF
           [
@@ -145,4 +146,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-# APK download URL is intentionally a raw.githubusercontent.com URL for Tachimanga compatibility.
+# APK is stored under the standard repo/apk/ path and referenced relatively from index.min.json.
