@@ -54,7 +54,7 @@ jobs:
       - name: Clean and build MangaFire debug APK
         run: ./gradlew :src:en:mangafire:clean :src:en:mangafire:assembleDebug --no-daemon --stacktrace
 
-      - name: Prepare extension repository
+      - name: Verify APK identity and signing certificate
         shell: bash
         run: |
           set -euo pipefail
@@ -63,15 +63,29 @@ jobs:
           echo "APK: $APK"
 
           SDK_ROOT="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-$HOME/Android/Sdk}}"
-          APKSIGNER="$(find "$SDK_ROOT/build-tools" -type f -name apksigner -perm -u+x | sort -V | tail -n 1)"
-          test -n "$APKSIGNER"
-          echo "apksigner: $APKSIGNER"
+          BUILD_TOOLS="$(find "$SDK_ROOT/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -n 1)"
+          APKSIGNER="$BUILD_TOOLS/apksigner"
+          AAPT="$BUILD_TOOLS/aapt"
+          test -x "$APKSIGNER"
+          test -x "$AAPT"
+
+          BADGING="$($AAPT dump badging "$APK")"
+          echo "$BADGING"
+          echo "$BADGING" | grep -F "package: name='eu.kanade.tachiyomi.extension.en.mangafire'" >/dev/null
+          echo "$BADGING" | grep -F "versionCode='${VERSION_CODE}'" >/dev/null
+          echo "$BADGING" | grep -F "versionName='${VERSION_NAME}'" >/dev/null
 
           CERT_OUTPUT="$($APKSIGNER verify --print-certs "$APK" 2>&1 || true)"
           echo "$CERT_OUTPUT"
           SIGNING_KEY_FINGERPRINT="$(printf '%s\n' "$CERT_OUTPUT" | grep -m1 -oE '[0-9A-Fa-f]{64}' || true)"
           test -n "$SIGNING_KEY_FINGERPRINT"
+          echo "SIGNING_KEY_FINGERPRINT=$SIGNING_KEY_FINGERPRINT" >> "$GITHUB_ENV"
+          echo "APK_PATH=$APK" >> "$GITHUB_ENV"
 
+      - name: Prepare extension repository
+        shell: bash
+        run: |
+          set -euo pipefail
           rm -rf /tmp/tachimanga-repo
           git clone --branch repo --single-branch "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" /tmp/tachimanga-repo
 
@@ -81,7 +95,7 @@ jobs:
           find . -maxdepth 1 -type f -delete
           rm -rf apk
           mkdir -p apk
-          cp "$GITHUB_WORKSPACE/$APK" "apk/${APK_NAME}"
+          cp "$GITHUB_WORKSPACE/$APK_PATH" "apk/${APK_NAME}"
 
           cat > index.json <<EOF
           [
