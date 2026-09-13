@@ -51,5 +51,5 @@ jobs:
           BADGING="$($BUILD_TOOLS/aapt dump badging "$APK")"
           echo "$BADGING"
           echo "$BADGING" | grep -F "package: name='eu.kanade.tachiyomi.extension.en.mangafire'" >/dev/null
-          echo "$BADGING" | grep -F "versionCode='11'" >/dev/null
+          echo "$BADGING" | grep -F "versionCode='106011'" >/dev/null
           echo "$BADGING" | grep -F "versionName='1.6.11'" >/dev/null
