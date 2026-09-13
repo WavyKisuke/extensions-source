@@ -53,13 +53,13 @@ class MangaDetailsDto(
         url = "/title/$hid${slug?.let { "-$it" } ?: ""}"
         title = this@MangaDetailsDto.title
         thumbnail_url = poster?.large ?: poster?.medium ?: poster?.small
-        author = authors?.joinToString { it.title }
-        artist = artists?.joinToString { it.title }
-        description = synopsisHtml?.let { Jsoup.parseBodyFragment(it).text() }
+        author = authors.orEmpty().joinToString { it.title }
+        artist = artists.orEmpty().joinToString { it.title }
+        description = synopsisHtml?.let { Jsoup.parseBodyFragment(it).text() }.orEmpty()
         genre = buildList {
             type?.replaceFirstChar { it.uppercase() }?.let { add(it) }
-            genres?.forEach { add(it.title) }
-            themes?.forEach { add(it.title) }
+            genres.orEmpty().forEach { add(it.title) }
+            themes.orEmpty().forEach { add(it.title) }
         }.joinToString()
         status = when (this@MangaDetailsDto.status?.lowercase()) {
             "releasing" -> SManga.ONGOING
@@ -68,7 +68,9 @@ class MangaDetailsDto(
             "discontinued" -> SManga.CANCELLED
             else -> SManga.UNKNOWN
         }
-        initialized = true
+        // Do not force the initialized flag here. Tachimanga's lib1.6 runtime
+        // can reject a detail object at this point, which prevents chapters
+        // from being displayed even though the chapter API itself works.
     }
 }
 
