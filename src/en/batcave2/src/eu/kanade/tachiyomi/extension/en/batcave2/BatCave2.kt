@@ -9,11 +9,15 @@ import eu.kanade.tachiyomi.source.model.SMangaUpdate
 import keiyoushi.annotation.Source
 import keiyoushi.network.get
 import keiyoushi.network.post
+import keiyoushi.network.rateLimit
 import keiyoushi.source.KeiSource
 import keiyoushi.utils.asJsoup
 import keiyoushi.utils.parseAs
 import keiyoushi.utils.toJsonRequestBody
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import okhttp3.HttpUrl
+import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.OkHttpClient
 import org.jsoup.nodes.Document
 import java.net.URLEncoder
@@ -26,63 +30,101 @@ import java.util.Locale
 abstract class BatCave2 : KeiSource() {
 
     override fun OkHttpClient.Builder.configureClient() = apply {
+        rateLimit(2)
         addInterceptor(BatCave2Guard(baseUrl).interceptor())
     }
 
     override suspend fun getPopularManga(page: Int): MangasPage {
-        val url = if (page == 1) "$baseUrl/comix/" else "$baseUrl/comix/page/$page/"
-        return parseList(client.get(url).asJsoup())
+        val url = "$baseUrl/comix/".toHttpUrl().newBuilder().apply {
+            if (page > 1) addPathSegments("page/$page/")
+        }.build()
+        return client.get(url).use { response -> parseList(response.asJsoup()) }
     }
 
     override suspend fun getLatestUpdates(page: Int): MangasPage {
-        val url = if (page == 1) baseUrl else "$baseUrl/page/$page/"
-        return parseList(client.get(url).asJsoup())
+        val url = baseUrl.toHttpUrl().newBuilder().apply {
+            if (page > 1) addPathSegments("page/$page/")
+        }.build()
+        return client.get(url).use { response -> parseList(response.asJsoup()) }
     }
 
     override suspend fun getSearchMangaList(page: Int, query: String, filters: FilterList): MangasPage {
         if (query.isBlank()) return getPopularManga(page)
+
         val encoded = URLEncoder.encode(query.trim(), "UTF-8")
-        val url = if (page == 1) "$baseUrl/search/$encoded/" else "$baseUrl/search/$encoded/page/$page/"
-        return parseList(client.get(url).asJsoup())
+        val url = "$baseUrl/search/$encoded/".toHttpUrl().newBuilder().apply {
+            if (page > 1) addPathSegments("page/$page/")
+        }.build()
+        return client.get(url).use { response -> parseList(response.asJsoup()) }
     }
 
     private fun parseList(doc: Document): MangasPage {
-        val items = doc.select("#dle-content .readed, #content-load .readed, .latest.grid-item, #content-load .latest")
-            .mapNotNull { card ->
-                val link = card.selectFirst("a[href]") ?: return@mapNotNull null
-                val title = card.selectFirst(".readed__title, .latest__title, h2, h3")?.text()?.trim().orEmpty()
-                if (title.isBlank()) return@mapNotNull null
+        val items = doc.select(
+            "#dle-content .readed, #content-load .readed, " +
+                ".latest.grid-item, #content-load .latest",
+        ).mapNotNull { card ->
+            val link = card.selectFirst("a[href]") ?: return@mapNotNull null
+            val title = card.selectFirst(
+                ".readed__title, .latest__title, h2, h3",
+            )?.text()?.trim().orEmpty()
+            if (title.isBlank()) return@mapNotNull null
 
-                SManga.create().apply {
-                    setUrlWithoutDomain(link.absUrl("href"))
-                    this.title = title
-                    thumbnail_url = card.selectFirst("img[data-src], img[src]")?.let { image ->
-                        image.absUrl(if (image.hasAttr("data-src")) "data-src" else "src")
-                    }
+            SManga.create().apply {
+                setUrlWithoutDomain(link.absUrl("href"))
+                this.title = title
+                thumbnail_url = card.selectFirst("img[data-src], img[src]")?.let { image ->
+                    image.absUrl(if (image.hasAttr("data-src")) "data-src" else "src")
                 }
             }
-            .distinctBy { it.url }
+        }.distinctBy { it.url }
 
         return MangasPage(items, hasNextPage(doc))
     }
 
-    private fun hasNextPage(doc: Document): Boolean = doc.select(".pagination a[href], .pagination__pages a[href]").any {
+    private fun hasNextPage(doc: Document): Boolean = doc.select(
+        ".pagination a[href], .pagination__pages a[href]",
+    ).any {
         it.text().trim().equals("Next", true) || it.text().trim() == "›"
     }
 
-    override suspend fun getMangaByUrl(url: HttpUrl): SManga? = parseDetails(client.get(url).asJsoup())
+    override suspend fun getMangaByUrl(url: HttpUrl): SManga? {
+        if (url.host != baseUrl.toHttpUrl().host) return null
+        return client.get(url).use { response -> parseDetails(response.asJsoup()) }
+    }
 
     override suspend fun fetchMangaUpdate(
         manga: SManga,
         chapters: List<SChapter>,
         fetchDetails: Boolean,
         fetchChapters: Boolean,
-    ): SMangaUpdate {
-        val doc = client.get(getMangaUrl(manga)).asJsoup()
-        return SMangaUpdate(
-            manga = if (fetchDetails) parseDetails(doc) else manga,
-            chapters = if (fetchChapters) parseChapters(doc) else chapters,
-        )
+    ): SMangaUpdate = coroutineScope {
+        // Keep detail and chapter refreshes independent so a failed HTML parse
+        // does not cancel the other half of the update.
+        val detailsDeferred = async {
+            if (fetchDetails) {
+                runCatching {
+                    client.get(getMangaUrl(manga)).use { response ->
+                        parseDetails(response.asJsoup())
+                    }
+                }.getOrElse { manga }
+            } else {
+                manga
+            }
+        }
+
+        val chaptersDeferred = async {
+            if (fetchChapters) {
+                runCatching {
+                    client.get(getMangaUrl(manga)).use { response ->
+                        parseChapters(response.asJsoup())
+                    }
+                }.getOrElse { chapters }
+            } else {
+                chapters
+            }
+        }
+
+        SMangaUpdate(detailsDeferred.await(), chaptersDeferred.await())
     }
 
     private fun parseDetails(doc: Document): SManga = SManga.create().apply {
@@ -102,14 +144,15 @@ abstract class BatCave2 : KeiSource() {
         description = buildString {
             infoValue(doc, "Publisher")?.let { append("Publisher: ").append(it).append('\n') }
             infoValue(doc, "Year")?.let { append("Year: ").append(it).append('\n') }
-            doc.selectFirst(".page__text, .page__description")?.text()?.trim()?.takeIf { it.isNotBlank() }?.let {
-                append('\n').append(it)
-            }
+            doc.selectFirst(".page__text, .page__description")?.text()?.trim()
+                ?.takeIf { it.isNotBlank() }
+                ?.let { append('\n').append(it) }
         }.trim()
     }
 
     private fun infoValue(doc: Document, label: String): String? =
-        doc.select(".page__list > li").firstOrNull { it.text().trim().startsWith(label, true) }
+        doc.select(".page__list > li")
+            .firstOrNull { it.text().trim().startsWith(label, true) }
             ?.selectFirst("a")?.text()?.trim()
             ?.takeIf { it.isNotBlank() }
 
@@ -142,8 +185,8 @@ abstract class BatCave2 : KeiSource() {
     }
 
     override suspend fun getPageList(chapter: SChapter): List<Page> {
-        val parts = chapter.url.substringAfter("/reader/").split('/')
-        if (parts.size < 2) return emptyList()
+        val parts = chapter.url.removeSuffix("/").substringAfter("/reader/").split('/')
+        if (parts.size < 2 || parts[0].isBlank() || parts[1].isBlank()) return emptyList()
 
         val response = client.post(
             "$baseUrl/engine/ajax/controller.php?mod=api&action=reader/getChapterData",
