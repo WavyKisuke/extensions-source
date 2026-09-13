@@ -18,6 +18,7 @@ import okhttp3.OkHttpClient
 import org.jsoup.nodes.Document
 import java.net.URLEncoder
 import java.time.LocalDate
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
@@ -69,7 +70,7 @@ abstract class BatCave2 : KeiSource() {
         it.text().trim().equals("Next", true) || it.text().trim() == "›"
     }
 
-    override suspend fun getMangaByUrl(url: HttpUrl): SManga = parseDetails(client.get(url).asJsoup())
+    override suspend fun getMangaByUrl(url: HttpUrl): SManga? = parseDetails(client.get(url).asJsoup())
 
     override suspend fun fetchMangaUpdate(
         manga: SManga,
@@ -132,7 +133,7 @@ abstract class BatCave2 : KeiSource() {
                 chapter_number = chapter.number
                 date_upload = runCatching {
                     LocalDate.parse(chapter.date, DATE_FORMAT)
-                        .atStartOfDay(java.time.ZoneId.systemDefault())
+                        .atStartOfDay(ZoneId.systemDefault())
                         .toInstant()
                         .toEpochMilli()
                 }.getOrDefault(0L)
@@ -142,7 +143,7 @@ abstract class BatCave2 : KeiSource() {
 
     override suspend fun getPageList(chapter: SChapter): List<Page> {
         val parts = chapter.url.substringAfter("/reader/").split('/')
-        if (parts.size != 2) return emptyList()
+        if (parts.size < 2) return emptyList()
 
         val response = client.post(
             "$baseUrl/engine/ajax/controller.php?mod=api&action=reader/getChapterData",
