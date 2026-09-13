@@ -9,12 +9,12 @@ from google.protobuf import json_format
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import index_pb2  # noqa: E402
 
-VERSION_NAME = "1.6.12"
-VERSION_CODE = 12
+VERSION_NAME = "1.6.13"
+VERSION_CODE = 13
 PACKAGE = "eu.kanade.tachiyomi.extension.en.mangafire"
 SOURCE_ID = 6084907896154116083
-APK_URL = "https://raw.githubusercontent.com/WavyKisuke/extensions-source/repo/apk/tachiyomi-en.mangafire-v1.6.12.apk"
-JAR_URL = "https://raw.githubusercontent.com/WavyKisuke/extensions-source/repo/jar/tachiyomi-en.mangafire-v1.6.12.jar"
+APK_URL = "https://raw.githubusercontent.com/WavyKisuke/extensions-source/repo/apk/tachiyomi-en.mangafire-v1.6.13.apk"
+JAR_URL = "https://raw.githubusercontent.com/WavyKisuke/extensions-source/repo/jar/tachiyomi-en.mangafire-v1.6.13.jar"
 SIGNING_KEY = sys.argv[1] if len(sys.argv) > 1 else ""
 
 ext = index_pb2.Extension(
