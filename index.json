@@ -1,7 +1,7 @@
 {
   "name": "WavyKisuke Extensions",
   "badgeLabel": "MANGA",
-  "signingKey": "f194d85c16af9125162c0492a0685719894d0c33fd49232c9b8db258e80b76b1",
+  "signingKey": "68df14111aefd9a5e83439d5f7347cc040931eb8342521aab0a0b7bbacb93325",
   "contact": {
     "website": "https://github.com/WavyKisuke/extensions-source"
   },
@@ -32,13 +32,13 @@
         "name": "BatCave",
         "packageName": "eu.kanade.tachiyomi.extension.en.batcave2",
         "resources": {
-          "apkUrl": "https://raw.githubusercontent.com/WavyKisuke/extensions-source/repo/apk/tachiyomi-en.batcave2-v1.6.18.apk",
+          "apkUrl": "https://raw.githubusercontent.com/WavyKisuke/extensions-source/repo/apk/tachiyomi-en.batcave2-v1.6.19.apk",
           "iconUrl": "https://raw.githubusercontent.com/WavyKisuke/extensions-source/main/src/en/batcave2/res/mipmap-xhdpi/ic_launcher.png",
-          "jarUrl": "https://raw.githubusercontent.com/WavyKisuke/extensions-source/repo/jar/tachiyomi-en.batcave2-v1.6.18.jar"
+          "jarUrl": "https://raw.githubusercontent.com/WavyKisuke/extensions-source/repo/jar/tachiyomi-en.batcave2-v1.6.19.jar"
         },
         "extensionLib": "1.6",
-        "versionCode": "18",
-        "versionName": "1.6.18",
+        "versionCode": "19",
+        "versionName": "1.6.19",
         "contentWarning": "CONTENT_WARNING_SAFE",
         "sources": [
           {
