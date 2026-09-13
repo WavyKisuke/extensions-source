@@ -30,10 +30,10 @@ BATCAVE = {
     "name": "BatCave",
     "package": "eu.kanade.tachiyomi.extension.en.batcave",
     "source_id": 7422099479605463706,
-    "version_name": "1.6.13",
-    "version_code": 13,
-    "apk_url": "https://raw.githubusercontent.com/WavyKisuke/extensions-source/repo/apk/tachiyomi-en.batcave-v1.6.13.apk",
-    "jar_url": "https://raw.githubusercontent.com/WavyKisuke/extensions-source/repo/jar/tachiyomi-en.batcave-v1.6.13.jar",
+    "version_name": "1.6.17",
+    "version_code": 17,
+    "apk_url": "https://raw.githubusercontent.com/WavyKisuke/extensions-source/repo/apk/tachiyomi-en.batcave-v1.6.17.apk",
+    "jar_url": "https://raw.githubusercontent.com/WavyKisuke/extensions-source/repo/jar/tachiyomi-en.batcave-v1.6.17.jar",
     "icon_url": "https://raw.githubusercontent.com/WavyKisuke/extensions-source/main/src/en/batcave/res/mipmap-xhdpi/ic_launcher.png",
     "base_url": "https://batcave.biz",
     "warning": index_pb2.CONTENT_WARNING_SAFE,
@@ -46,52 +46,21 @@ legacy_extensions = []
 for item in EXTENSIONS:
     protobuf_extensions.append(
         index_pb2.Extension(
-            name=item["name"],
-            packageName=item["package"],
-            resources=index_pb2.Resources(
-                apkUrl=item["apk_url"],
-                jarUrl=item["jar_url"],
-                iconUrl=item["icon_url"],
-            ),
-            extensionLib="1.6",
-            versionCode=item["version_code"],
-            versionName=item["version_name"],
+            name=item["name"], packageName=item["package"],
+            resources=index_pb2.Resources(apkUrl=item["apk_url"], jarUrl=item["jar_url"], iconUrl=item["icon_url"]),
+            extensionLib="1.6", versionCode=item["version_code"], versionName=item["version_name"],
             contentWarning=item["warning"],
-            sources=[
-                index_pb2.Source(
-                    id=item["source_id"],
-                    name=item["name"],
-                    language="en",
-                    homeUrl=item["base_url"],
-                )
-            ],
+            sources=[index_pb2.Source(id=item["source_id"], name=item["name"], language="en", homeUrl=item["base_url"])],
         )
     )
-    legacy_extensions.append(
-        {
-            "name": item["name"],
-            "pkg": item["package"],
-            "lang": "en",
-            "code": item["version_code"],
-            "version": item["version_name"],
-            "apk": item["apk_url"],
-            "jar": item["jar_url"],
-            "nsfw": False,
-            "sources": [
-                {
-                    "id": str(item["source_id"]),
-                    "name": item["name"],
-                    "lang": "en",
-                    "baseUrl": item["base_url"],
-                }
-            ],
-        }
-    )
+    legacy_extensions.append({
+        "name": item["name"], "pkg": item["package"], "lang": "en", "code": item["version_code"],
+        "version": item["version_name"], "apk": item["apk_url"], "jar": item["jar_url"], "nsfw": False,
+        "sources": [{"id": str(item["source_id"]), "name": item["name"], "lang": "en", "baseUrl": item["base_url"]}],
+    })
 
 index = index_pb2.Index(
-    name="WavyKisuke Extensions",
-    badgeLabel="MANGA",
-    signingKey=SIGNING_KEY,
+    name="WavyKisuke Extensions", badgeLabel="MANGA", signingKey=SIGNING_KEY,
     contact=index_pb2.Contact(website="https://github.com/WavyKisuke/extensions-source"),
     extensionList=index_pb2.ExtensionList(extensions=protobuf_extensions),
 )
@@ -99,26 +68,17 @@ index = index_pb2.Index(
 with (repo_dir / "index.json").open("w", encoding="utf-8") as f:
     f.write(json_format.MessageToJson(index, preserving_proto_field_name=True, always_print_fields_with_no_presence=False))
     f.write("\n")
-
 with (repo_dir / "index.pb").open("wb") as f:
     f.write(gzip.compress(index.SerializeToString(deterministic=True), mtime=0))
-
 with (repo_dir / "repo.json").open("w", encoding="utf-8") as f:
-    json.dump(
-        {
-            "index_v2": "https://raw.githubusercontent.com/WavyKisuke/extensions-source/repo/index.pb",
-            "meta": {
-                "name": "WavyKisuke Extensions",
-                "shortName": "WavyKisuke",
-                "website": "https://github.com/WavyKisuke/extensions-source",
-                "signingKeyFingerprint": SIGNING_KEY,
-            },
+    json.dump({
+        "index_v2": "https://raw.githubusercontent.com/WavyKisuke/extensions-source/repo/index.pb",
+        "meta": {
+            "name": "WavyKisuke Extensions", "shortName": "WavyKisuke",
+            "website": "https://github.com/WavyKisuke/extensions-source", "signingKeyFingerprint": SIGNING_KEY,
         },
-        f,
-        indent=2,
-    )
+    }, f, indent=2)
     f.write("\n")
-
 with (repo_dir / "index.min.json").open("w", encoding="utf-8") as f:
     json.dump(legacy_extensions, f, indent=2)
     f.write("\n")
