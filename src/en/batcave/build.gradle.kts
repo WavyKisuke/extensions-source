@@ -6,7 +6,7 @@ plugins {
 
 keiyoushi {
     name = "BatCave"
-    versionCode = 13
+    versionCode = 17
     contentWarning = ContentWarning.SAFE
     libVersion = "1.6"
 
