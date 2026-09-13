@@ -187,7 +187,7 @@ abstract class BatCave : KeiSource() {
             .selectFirst("script:containsData(__XFILTER__)")?.data()
             ?.substringAfter("window.__XFILTER__ =", "")
             ?.substringBeforeLast(';')?.trim()
-            ?.let { runCatching { it.parseAs<XFilters>().filterItems }.getOrNull() }
+            ?.let { runCatching { it.parseAs<XFilters>().filterItems.parseAs<kotlinx.serialization.json.JsonElement>() }.getOrNull() }
             ?: kotlinx.serialization.json.JsonNull
 
     override fun getFilterList(data: kotlinx.serialization.json.JsonElement?): FilterList {
