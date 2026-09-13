@@ -46,6 +46,23 @@ class GenreFilter : UriTriSelectFilter("Genres", "genres_in[]", "genres_ex[]", a
     "Suspense" to "37", "Thriller" to "38", "Vampire" to "39",
 ))
 
+class GenreModeFilter : Filter.Select<String>("Genre and theme match mode", arrayOf("AND", "OR")), UriFilter {
+    override fun addToUri(builder: HttpUrl.Builder) {
+        val mode = if (state == 0) "and" else "or"
+        builder.addQueryParameter("genres_mode", mode)
+        builder.addQueryParameter("theme_mode", mode)
+    }
+}
+
+class ThemeFilter : UriMultiSelectFilter("Themes", "theme_ids[]", arrayOf(
+    "Animals" to "268934", "Cooking" to "268935", "Crossdressing" to "268936", "Delinquents" to "268937",
+    "Demons" to "268938", "Genderswap" to "268939", "Ghosts" to "268940", "Harem" to "268942",
+    "Mafia" to "268945", "Magic" to "268946", "Martial Arts" to "268947", "Military" to "268948",
+    "Monsters" to "268950", "Music" to "268951", "Ninja" to "268952", "Police" to "268954",
+    "Reincarnation" to "268956", "Samurai" to "268958", "School Life" to "268959", "Survival" to "268962",
+    "Time Travel" to "268963", "Video Games" to "268966", "Villainess" to "268967", "Zombies" to "268969",
+))
+
 class StatusFilter : UriMultiSelectFilter("Status", "statuses[]", arrayOf(
     "Releasing" to "releasing", "Finished" to "finished", "On Hiatus" to "on_hiatus",
     "Discontinued" to "discontinued", "Not Yet Released" to "not_yet_released",
@@ -53,6 +70,14 @@ class StatusFilter : UriMultiSelectFilter("Status", "statuses[]", arrayOf(
 
 class MinChapterFilter : Filter.Text("Minimum chapters"), UriFilter {
     override fun addToUri(builder: HttpUrl.Builder) { state.toIntOrNull()?.takeIf { it > 0 }?.let { builder.addQueryParameter("min_chap", it.toString()) } }
+}
+
+class YearFromFilter : Filter.Text("Release year (From)"), UriFilter {
+    override fun addToUri(builder: HttpUrl.Builder) { state.toIntOrNull()?.let { builder.addQueryParameter("year_from", it.toString()) } }
+}
+
+class YearToFilter : Filter.Text("Release year (To)"), UriFilter {
+    override fun addToUri(builder: HttpUrl.Builder) { state.toIntOrNull()?.let { builder.addQueryParameter("year_to", it.toString()) } }
 }
 
 class AuthorFilter : Filter.Text("Author / Artist")
