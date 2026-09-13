@@ -133,5 +133,7 @@ jobs:
           fi
           git remote set-url origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
           git push origin HEAD:refs/heads/repo
+
+      # Keep the personal publisher triggerable from main after metadata changes.
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
