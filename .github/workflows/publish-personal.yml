@@ -22,10 +22,10 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  VERSION_NAME: 1.4.5
-  VERSION_CODE: 5
-  APK_NAME: tachiyomi-en.mangafire-v1.4.5.apk
-  APK_URL: https://raw.githubusercontent.com/WavyKisuke/extensions-source/repo/apk/tachiyomi-en.mangafire-v1.4.5.apk
+  VERSION_NAME: 1.4.6
+  VERSION_CODE: 6
+  APK_NAME: tachiyomi-en.mangafire-v1.4.6.apk
+  APK_URL: https://raw.githubusercontent.com/WavyKisuke/extensions-source/repo/apk/tachiyomi-en.mangafire-v1.4.6.apk
 
 jobs:
   build-and-publish:
@@ -71,7 +71,6 @@ jobs:
           echo "$CERT_OUTPUT"
           SIGNING_KEY_FINGERPRINT="$(printf '%s\n' "$CERT_OUTPUT" | grep -m1 -oE '[0-9A-Fa-f]{64}' || true)"
           test -n "$SIGNING_KEY_FINGERPRINT"
-          echo "Signing certificate fingerprint detected."
 
           rm -rf /tmp/tachimanga-repo
           git clone --branch repo --single-branch "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" /tmp/tachimanga-repo
@@ -132,16 +131,10 @@ jobs:
           git config user.name "WavyKisuke"
           git config user.email "327378209+WavyKisuke@users.noreply.github.com"
           git add -A
-          echo "Publish changes:"
-          git status --short
           if ! git diff --cached --quiet; then
             git commit -m "Publish MangaFire ${VERSION_NAME}"
-          else
-            echo "No repository changes to commit."
           fi
-          echo "Pushing repository branch..."
           git remote set-url origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
           git push origin HEAD:refs/heads/repo
-          echo "Repository publish completed."
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
