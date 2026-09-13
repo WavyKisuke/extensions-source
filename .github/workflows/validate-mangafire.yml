@@ -1,0 +1,52 @@
+name: Validate MangaFire
+
+on:
+  pull_request:
+    paths:
+      - 'src/en/mangafire/**'
+      - 'build-logic/**'
+      - 'gradle/**'
+      - 'gradle.properties'
+      - 'settings.gradle.kts'
+      - 'build.gradle.kts'
+      - '.github/workflows/validate-mangafire.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: temurin
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Build MangaFire
+        run: ./gradlew :src:en:mangafire:clean :src:en:mangafire:assembleDebug --no-daemon --stacktrace
+
+      - name: Verify APK metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK="$(find src/en/mangafire/build/outputs/apk/debug -maxdepth 1 -type f -name '*.apk' | head -n 1)"
+          test -n "$APK"
+          SDK_ROOT="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-$HOME/Android/Sdk}}"
+          BUILD_TOOLS="$(find "$SDK_ROOT/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -n 1)"
+          BADGING="$($BUILD_TOOLS/aapt dump badging "$APK")"
+          echo "$BADGING"
+          echo "$BADGING" | grep -F "package: name='eu.kanade.tachiyomi.extension.en.mangafire'" >/dev/null
+          echo "$BADGING" | grep -F "versionCode='11'" >/dev/null
+          echo "$BADGING" | grep -F "versionName='1.6.11'" >/dev/null
