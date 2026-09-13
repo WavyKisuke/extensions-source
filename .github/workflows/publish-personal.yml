@@ -22,10 +22,10 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  VERSION_NAME: 1.4.4
-  VERSION_CODE: 4
-  APK_NAME: tachiyomi-en.mangafire-v1.4.4.apk
-  APK_URL: apk/tachiyomi-en.mangafire-v1.4.4.apk
+  VERSION_NAME: 1.4.5
+  VERSION_CODE: 5
+  APK_NAME: tachiyomi-en.mangafire-v1.4.5.apk
+  APK_URL: https://raw.githubusercontent.com/WavyKisuke/extensions-source/repo/apk/tachiyomi-en.mangafire-v1.4.5.apk
 
 jobs:
   build-and-publish:
@@ -145,5 +145,3 @@ jobs:
           echo "Repository publish completed."
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-# APK is stored under the standard repo/apk/ path and referenced relatively from index.min.json.
