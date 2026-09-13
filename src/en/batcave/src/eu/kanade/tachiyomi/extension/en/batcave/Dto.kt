@@ -4,39 +4,13 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-class XFilters(
-    @SerialName("filter_items") val filterItems: XFilterItems,
-) {
-    val publishers get() = filterItems.publisher.values
-    val genres get() = filterItems.genre.values
-}
-
-@Serializable
-class XFilterItems(
-    @SerialName("p") val publisher: XFilterItem,
-    @SerialName("g") val genre: XFilterItem,
-)
-
-@Serializable
-class XFilterItem(
-    val values: List<FilterValue> = emptyList(),
-)
-
-@Serializable
-class FilterValue(
-    val id: Int,
-    val value: String,
-)
-
-@Serializable
-class Chapters(
+class ChapterData(
     @SerialName("news_id") val comicId: Int,
-    val chapters: List<Chapter> = emptyList(),
-    val xhash: String = "",
+    val chapters: List<ChapterItem> = emptyList(),
 )
 
 @Serializable
-class Chapter(
+class ChapterItem(
     val id: Int,
     @SerialName("posi") val number: Float,
     val title: String,
@@ -44,24 +18,39 @@ class Chapter(
 )
 
 @Serializable
-class ChapterRequestBody(
-    @SerialName("news_id") private val newsId: String,
-    @SerialName("chapter_id") private val chapterId: String,
+class ChapterRequest(
+    @SerialName("news_id") val comicId: String,
+    @SerialName("chapter_id") val chapterId: String,
 )
 
 @Serializable
-class ChapterApiResponse(
-    val data: Images,
+class ReaderResponse(
+    val data: ReaderData,
 )
 
 @Serializable
-class Images(
+class ReaderData(
     val images: List<String> = emptyList(),
 )
 
 @Serializable
-class RelatedComic(
-    val name: String,
-    val url: String,
-    val thumbnail: String?,
+class XFilters(
+    @SerialName("filter_items") val filterItems: XFilterItems,
+)
+
+@Serializable
+class XFilterItems(
+    @SerialName("p") val publisher: XFilterGroup = XFilterGroup(),
+    @SerialName("g") val genre: XFilterGroup = XFilterGroup(),
+)
+
+@Serializable
+class XFilterGroup(
+    val values: List<XFilterValue> = emptyList(),
+)
+
+@Serializable
+class XFilterValue(
+    val id: Int,
+    val value: String,
 )
