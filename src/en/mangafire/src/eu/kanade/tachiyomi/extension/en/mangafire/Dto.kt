@@ -6,10 +6,16 @@ import kotlinx.serialization.Serializable
 import org.jsoup.Jsoup
 
 @Serializable
-class ApiResponse<T>(val items: List<T> = emptyList(), val meta: ApiMeta? = null)
+class ApiResponse<T>(
+    val items: List<T> = emptyList(),
+    val meta: ApiMeta? = null,
+)
 
 @Serializable
-class ApiMeta(val lastPage: Int = 1, val hasNext: Boolean = false)
+class ApiMeta(
+    val lastPage: Int = 1,
+    val hasNext: Boolean = false,
+)
 
 @Serializable
 class TagResponse(val data: List<TagDto> = emptyList())
@@ -53,24 +59,22 @@ class MangaDetailsDto(
         url = "/title/$hid${slug?.let { "-$it" } ?: ""}"
         title = this@MangaDetailsDto.title
         thumbnail_url = poster?.large ?: poster?.medium ?: poster?.small
-        author = authors.orEmpty().joinToString { it.title }
-        artist = artists.orEmpty().joinToString { it.title }
-        description = synopsisHtml?.let { Jsoup.parseBodyFragment(it).text() }.orEmpty()
+        author = authors?.joinToString { it.title }
+        artist = artists?.joinToString { it.title }
+        description = synopsisHtml?.let { Jsoup.parseBodyFragment(it).text() }
         genre = buildList {
             type?.replaceFirstChar { it.uppercase() }?.let { add(it) }
-            genres.orEmpty().forEach { add(it.title) }
-            themes.orEmpty().forEach { add(it.title) }
+            genres?.forEach { add(it.title) }
+            themes?.forEach { add(it.title) }
         }.joinToString()
         status = when (this@MangaDetailsDto.status?.lowercase()) {
             "releasing" -> SManga.ONGOING
-            "finished", "completed" -> SManga.COMPLETED
+            "finished" -> SManga.COMPLETED
             "on_hiatus" -> SManga.ON_HIATUS
             "discontinued" -> SManga.CANCELLED
             else -> SManga.UNKNOWN
         }
-        // Do not force the initialized flag here. Tachimanga's lib1.6 runtime
-        // can reject a detail object at this point, which prevents chapters
-        // from being displayed even though the chapter API itself works.
+        initialized = true
     }
 }
 
@@ -113,14 +117,14 @@ class ChapterDto(
     fun toSChapter(mangaUrl: String, langCode: String): SChapter = SChapter.create().apply {
         url = "$mangaUrl/$id-chapter-${number.toString().removeSuffix(".0")}-$langCode"
         when {
-            name.isNullOrBlank() -> number to "Ch. ${number.toString().removeSuffix(".0")}"
-            else -> when (val extracted = chapterRegex.find(name)?.value?.toFloatOrNull()) {
-                null -> number to "Ch. ${number.toString().removeSuffix(".0")} - $name"
-                else -> extracted to name
+            this@ChapterDto.name.isNullOrBlank() -> number to "Ch. ${number.toString().removeSuffix(".0")}"
+            else -> when (val extractedNumber = chapterRegex.find(this@ChapterDto.name)?.value?.toFloatOrNull()) {
+                null -> number to "Ch. ${number.toString().removeSuffix(".0")} - ${this@ChapterDto.name}"
+                else -> extractedNumber to this@ChapterDto.name
             }
-        }.let { (num, label) ->
-            chapter_number = num
-            this.name = label
+        }.let { (a, b) ->
+            chapter_number = a
+            name = b
         }
         scanlator = type ?: "Unknown"
         date_upload = createdAt?.times(1000L) ?: 0L
