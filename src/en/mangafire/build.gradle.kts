@@ -6,13 +6,14 @@ plugins {
 
 keiyoushi {
     name = "MangaFire"
-    versionCode = 10
+    versionCode = 11
     contentWarning = ContentWarning.MIXED
     libVersion = "1.6"
 
     source {
         name = "MangaFire"
         lang = "en"
+        id = 6084907896154116083L
         baseUrl = "https://mangafire.to"
     }
 
