@@ -22,10 +22,10 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  VERSION_NAME: 1.4.6
-  VERSION_CODE: 6
-  APK_NAME: tachiyomi-en.mangafire-v1.4.6.apk
-  APK_URL: https://raw.githubusercontent.com/WavyKisuke/extensions-source/repo/apk/tachiyomi-en.mangafire-v1.4.6.apk
+  VERSION_NAME: 1.6.7
+  VERSION_CODE: 7
+  APK_NAME: tachiyomi-en.mangafire-v1.6.7.apk
+  APK_URL: https://raw.githubusercontent.com/WavyKisuke/extensions-source/repo/apk/tachiyomi-en.mangafire-v1.6.7.apk
 
 jobs:
   build-and-publish:
