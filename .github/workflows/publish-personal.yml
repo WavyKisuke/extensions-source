@@ -23,11 +23,11 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  VERSION_NAME: 1.6.12
-  SOURCE_VERSION_CODE: 12
-  ANDROID_VERSION_CODE: 106012
-  APK_NAME: tachiyomi-en.mangafire-v1.6.12.apk
-  JAR_NAME: tachiyomi-en.mangafire-v1.6.12.jar
+  VERSION_NAME: 1.6.13
+  SOURCE_VERSION_CODE: 13
+  ANDROID_VERSION_CODE: 106013
+  APK_NAME: tachiyomi-en.mangafire-v1.6.13.apk
+  JAR_NAME: tachiyomi-en.mangafire-v1.6.13.jar
   SOURCE_ID: "6084907896154116083"
 
 jobs:
