@@ -138,7 +138,8 @@ jobs:
             echo "No repository changes to commit."
           fi
           echo "Pushing repository branch..."
-          git -c http.extraheader="AUTHORIZATION: bearer ${GITHUB_TOKEN}" push origin HEAD:refs/heads/repo
+          git remote set-url origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git push origin HEAD:refs/heads/repo
           echo "Repository publish completed."
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
