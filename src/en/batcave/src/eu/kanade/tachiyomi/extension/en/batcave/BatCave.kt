@@ -108,8 +108,8 @@ abstract class BatCave : KeiSource() {
     ): SMangaUpdate {
         val doc = client.get(getMangaUrl(manga)).asJsoup()
         return SMangaUpdate(
-            manga = if (fetchDetails) parseDetails(doc) else null,
-            chapters = if (fetchChapters) parseChapters(doc) else null,
+            manga = if (fetchDetails) parseDetails(doc) else manga,
+            chapters = if (fetchChapters) parseChapters(doc) else chapters,
         )
     }
 
@@ -182,7 +182,7 @@ abstract class BatCave : KeiSource() {
 
     override val supportsFilterFetching = true
 
-    override suspend fun fetchFilterData() =
+    override suspend fun fetchFilterData(): kotlinx.serialization.json.JsonElement =
         client.get("$baseUrl/comix/").asJsoup()
             .selectFirst("script:containsData(__XFILTER__)")?.data()
             ?.substringAfter("window.__XFILTER__ =", "")
