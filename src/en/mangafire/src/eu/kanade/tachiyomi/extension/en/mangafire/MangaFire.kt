@@ -1,5 +1,6 @@
 package eu.kanade.tachiyomi.extension.en.mangafire
 
+// Keep this source touch in the publish path so repository metadata fixes are rebuilt.
 import androidx.preference.MultiSelectListPreference
 import androidx.preference.PreferenceScreen
 import androidx.preference.SwitchPreferenceCompat
