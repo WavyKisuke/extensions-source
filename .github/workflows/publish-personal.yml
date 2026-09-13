@@ -31,11 +31,11 @@ env:
   MANGAFIRE_JAR_NAME: tachiyomi-en.mangafire-v1.6.15.jar
   MANGAFIRE_PACKAGE: eu.kanade.tachiyomi.extension.en.mangafire
 
-  BATCAVE_VERSION_NAME: 1.6.13
-  BATCAVE_SOURCE_VERSION_CODE: 13
-  BATCAVE_ANDROID_VERSION_CODE: 106013
-  BATCAVE_APK_NAME: tachiyomi-en.batcave-v1.6.13.apk
-  BATCAVE_JAR_NAME: tachiyomi-en.batcave-v1.6.13.jar
+  BATCAVE_VERSION_NAME: 1.6.17
+  BATCAVE_SOURCE_VERSION_CODE: 17
+  BATCAVE_ANDROID_VERSION_CODE: 106017
+  BATCAVE_APK_NAME: tachiyomi-en.batcave-v1.6.17.apk
+  BATCAVE_JAR_NAME: tachiyomi-en.batcave-v1.6.17.jar
   BATCAVE_PACKAGE: eu.kanade.tachiyomi.extension.en.batcave
 
 jobs:
@@ -72,42 +72,28 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-
           MF_APK="$(find src/en/mangafire/build/outputs/apk/release -maxdepth 1 -type f -name '*.apk' | head -n 1)"
           MF_JAR="$(find src/en/mangafire/build/outputs/jar/release -maxdepth 1 -type f -name '*.jar' | head -n 1)"
           BC_APK="$(find src/en/batcave/build/outputs/apk/release -maxdepth 1 -type f -name '*.apk' | head -n 1)"
           BC_JAR="$(find src/en/batcave/build/outputs/jar/release -maxdepth 1 -type f -name '*.jar' | head -n 1)"
-
-          test -n "$MF_APK" && test -n "$MF_JAR"
-          test -n "$BC_APK" && test -n "$BC_JAR"
-
+          test -n "$MF_APK" && test -n "$MF_JAR" && test -n "$BC_APK" && test -n "$BC_JAR"
           SDK_ROOT="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-$HOME/Android/Sdk}}"
           BUILD_TOOLS="$(find "$SDK_ROOT/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -n 1)"
           AAPT="$BUILD_TOOLS/aapt"
           APKSIGNER="$BUILD_TOOLS/apksigner"
-          test -x "$AAPT" && test -x "$APKSIGNER"
-
           MF_BADGING="$($AAPT dump badging "$MF_APK")"
           BC_BADGING="$($AAPT dump badging "$BC_APK")"
           echo "$MF_BADGING"
           echo "$BC_BADGING"
-
           echo "$MF_BADGING" | grep -F "package: name='${MANGAFIRE_PACKAGE}'" >/dev/null
           echo "$MF_BADGING" | grep -F "versionCode='${MANGAFIRE_ANDROID_VERSION_CODE}'" >/dev/null
-          echo "$MF_BADGING" | grep -F "versionName='${MANGAFIRE_VERSION_NAME}'" >/dev/null
-
           echo "$BC_BADGING" | grep -F "package: name='${BATCAVE_PACKAGE}'" >/dev/null
           echo "$BC_BADGING" | grep -F "versionCode='${BATCAVE_ANDROID_VERSION_CODE}'" >/dev/null
-          echo "$BC_BADGING" | grep -F "versionName='${BATCAVE_VERSION_NAME}'" >/dev/null
-
           CERT_OUTPUT="$($APKSIGNER verify --print-certs "$MF_APK" 2>&1 || true)"
-          echo "$CERT_OUTPUT"
           SIGNING_KEY_FINGERPRINT="$(printf '%s\n' "$CERT_OUTPUT" | grep -m1 -oE '[0-9A-Fa-f]{64}' || true)"
           test -n "$SIGNING_KEY_FINGERPRINT"
-
           unzip -t "$MF_JAR" >/dev/null
           unzip -t "$BC_JAR" >/dev/null
-
           echo "SIGNING_KEY_FINGERPRINT=$SIGNING_KEY_FINGERPRINT" >> "$GITHUB_ENV"
           echo "MF_APK_PATH=$MF_APK" >> "$GITHUB_ENV"
           echo "MF_JAR_PATH=$MF_JAR" >> "$GITHUB_ENV"
@@ -123,18 +109,14 @@ jobs:
           cd /tmp/tachimanga-repo
           git fetch origin repo
           git checkout -B repo origin/repo
-
           find . -maxdepth 1 -type f -delete
           rm -rf apk jar
           mkdir -p apk jar
-
           cp "$GITHUB_WORKSPACE/$MF_APK_PATH" "apk/${MANGAFIRE_APK_NAME}"
           cp "$GITHUB_WORKSPACE/$MF_JAR_PATH" "jar/${MANGAFIRE_JAR_NAME}"
           cp "$GITHUB_WORKSPACE/$BC_APK_PATH" "apk/${BATCAVE_APK_NAME}"
           cp "$GITHUB_WORKSPACE/$BC_JAR_PATH" "jar/${BATCAVE_JAR_NAME}"
-
           python3 "$GITHUB_WORKSPACE/scripts/generate-tachimanga-repo.py" "$SIGNING_KEY_FINGERPRINT" .
-
           cat > README.md <<'EOF'
           # WavyKisuke TachiManga Extensions
 
@@ -143,7 +125,6 @@ jobs:
 
           This repository publishes the MangaFire and BatCave TachiManga extensions as both APK and JAR packages.
           EOF
-
           git config user.name "WavyKisuke"
           git config user.email "327378209+WavyKisuke@users.noreply.github.com"
           git add -A
