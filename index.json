@@ -1,7 +1,7 @@
 {
-  "name": "WavyKisuke MangaFire",
+  "name": "WavyKisuke Extensions",
   "badgeLabel": "MANGA",
-  "signingKey": "a598339efa6f5e653afc873318a7d241e520c3abcef86fefe2f3e3e238fd3cf8",
+  "signingKey": "a1aaff822ad3f4e957757524b468df538f24b23313825c05f3d9ca1231be9ea6",
   "contact": {
     "website": "https://github.com/WavyKisuke/extensions-source"
   },
@@ -25,6 +25,27 @@
             "name": "MangaFire",
             "language": "en",
             "homeUrl": "https://mangafire.to"
+          }
+        ]
+      },
+      {
+        "name": "BatCave",
+        "packageName": "eu.kanade.tachiyomi.extension.en.batcave",
+        "resources": {
+          "apkUrl": "https://raw.githubusercontent.com/WavyKisuke/extensions-source/repo/apk/tachiyomi-en.batcave-v1.6.13.apk",
+          "iconUrl": "https://raw.githubusercontent.com/WavyKisuke/extensions-source/main/src/en/batcave/res/mipmap-xhdpi/ic_launcher.png",
+          "jarUrl": "https://raw.githubusercontent.com/WavyKisuke/extensions-source/repo/jar/tachiyomi-en.batcave-v1.6.13.jar"
+        },
+        "extensionLib": "1.6",
+        "versionCode": "13",
+        "versionName": "1.6.13",
+        "contentWarning": "CONTENT_WARNING_SAFE",
+        "sources": [
+          {
+            "id": "7422099479605463706",
+            "name": "BatCave",
+            "language": "en",
+            "homeUrl": "https://batcave.biz"
           }
         ]
       }

@@ -1,9 +1,9 @@
 {
   "index_v2": "https://raw.githubusercontent.com/WavyKisuke/extensions-source/repo/index.pb",
   "meta": {
-    "name": "WavyKisuke MangaFire",
-    "shortName": "MangaFire",
+    "name": "WavyKisuke Extensions",
+    "shortName": "WavyKisuke",
     "website": "https://github.com/WavyKisuke/extensions-source",
-    "signingKeyFingerprint": "a598339efa6f5e653afc873318a7d241e520c3abcef86fefe2f3e3e238fd3cf8"
+    "signingKeyFingerprint": "a1aaff822ad3f4e957757524b468df538f24b23313825c05f3d9ca1231be9ea6"
   }
 }
