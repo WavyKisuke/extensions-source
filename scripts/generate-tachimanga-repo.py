@@ -28,13 +28,13 @@ MANGA_FIRE = {
 
 BATCAVE = {
     "name": "BatCave",
-    "package": "eu.kanade.tachiyomi.extension.en.batcave",
+    "package": "eu.kanade.tachiyomi.extension.en.batcave2",
     "source_id": 7422099479605463706,
-    "version_name": "1.6.17",
-    "version_code": 17,
-    "apk_url": "https://raw.githubusercontent.com/WavyKisuke/extensions-source/repo/apk/tachiyomi-en.batcave-v1.6.17.apk",
-    "jar_url": "https://raw.githubusercontent.com/WavyKisuke/extensions-source/repo/jar/tachiyomi-en.batcave-v1.6.17.jar",
-    "icon_url": "https://raw.githubusercontent.com/WavyKisuke/extensions-source/main/src/en/batcave/res/mipmap-xhdpi/ic_launcher.png",
+    "version_name": "1.6.18",
+    "version_code": 18,
+    "apk_url": "https://raw.githubusercontent.com/WavyKisuke/extensions-source/repo/apk/tachiyomi-en.batcave2-v1.6.18.apk",
+    "jar_url": "https://raw.githubusercontent.com/WavyKisuke/extensions-source/repo/jar/tachiyomi-en.batcave2-v1.6.18.jar",
+    "icon_url": "https://raw.githubusercontent.com/WavyKisuke/extensions-source/main/src/en/batcave2/res/mipmap-xhdpi/ic_launcher.png",
     "base_url": "https://batcave.biz",
     "warning": index_pb2.CONTENT_WARNING_SAFE,
 }
