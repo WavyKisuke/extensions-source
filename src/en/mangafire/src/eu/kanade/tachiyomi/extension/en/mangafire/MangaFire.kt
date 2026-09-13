@@ -4,20 +4,20 @@ import androidx.preference.MultiSelectListPreference
 import androidx.preference.PreferenceScreen
 import androidx.preference.SwitchPreferenceCompat
 import eu.kanade.tachiyomi.source.ConfigurableSource
+import eu.kanade.tachiyomi.source.model.Filter
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.Page
-import eu.kanade.tachiyomi.source.model.Request
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.HttpSource
 import keiyoushi.annotation.Source
+import keiyoushi.utils.getPreferences
 import keiyoushi.utils.parseAs
+import okhttp3.Request
 import okhttp3.Response
+import okhttp3.HttpUrl.Companion.toHttpUrl
 import rx.Observable
-import rx.functions.Func1
-import rx.Observable
-import java.util.concurrent.TimeUnit
 
 @Source
 abstract class MangaFire : HttpSource(), ConfigurableSource {
