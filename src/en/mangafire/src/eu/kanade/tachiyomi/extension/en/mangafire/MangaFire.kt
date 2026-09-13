@@ -29,10 +29,7 @@ import okhttp3.OkHttpClient
 import okhttp3.Response
 
 @Source
-abstract class MangaFire :
-    KeiSource(),
-    ConfigurableSource {
-
+abstract class MangaFire : KeiSource(), ConfigurableSource {
     private val langCode = "en"
 
     override fun OkHttpClient.Builder.configureClient() = apply {
@@ -53,9 +50,7 @@ abstract class MangaFire :
             addQueryParameter("limit", "50")
             ContentRatingFilter(contentRating).addToUri(this)
         }.build()
-        return client.get(url).use { response ->
-            parseMangaList(response)
-        }
+        return client.get(url).use(::parseMangaList)
     }
 
     override suspend fun getLatestUpdates(page: Int): MangasPage {
@@ -65,9 +60,7 @@ abstract class MangaFire :
             addQueryParameter("limit", "50")
             ContentRatingFilter(contentRating).addToUri(this)
         }.build()
-        return client.get(url).use { response ->
-            parseMangaList(response)
-        }
+        return client.get(url).use(::parseMangaList)
     }
 
     private fun parseMangaList(response: Response): MangasPage {
@@ -102,9 +95,7 @@ abstract class MangaFire :
             filters.filterIsInstance<UriFilter>().forEach { it.addToUri(this) }
         }.build()
 
-        return client.get(url).use { response ->
-            parseMangaList(response)
-        }
+        return client.get(url).use(::parseMangaList)
     }
 
     override suspend fun getMangaByUrl(url: HttpUrl): SManga? {
@@ -119,8 +110,19 @@ abstract class MangaFire :
         fetchChapters: Boolean,
     ): SMangaUpdate = coroutineScope {
         val hid = getHid(manga.url)
-        val detailsDeferred = async { if (fetchDetails) fetchMangaDetails(hid) else manga }
-        val chaptersDeferred = async { if (fetchChapters) fetchChapters(manga) else chapters }
+
+        // A detail failure must never cancel the chapter request. Tachimanga
+        // reports the former as "manga-details" and then shows zero chapters.
+        val detailsDeferred = async {
+            if (!fetchDetails) {
+                manga
+            } else {
+                runCatching { fetchMangaDetails(hid) }.getOrElse { manga }
+            }
+        }
+        val chaptersDeferred = async {
+            if (fetchChapters) fetchChapters(manga) else chapters
+        }
         SMangaUpdate(detailsDeferred.await(), chaptersDeferred.await())
     }
 
@@ -144,42 +146,36 @@ abstract class MangaFire :
         }
 
         if (!displayVolumes) {
-            val firstUrl = "$baseUrl/api/titles/$hid/chapters".toHttpUrl().newBuilder()
-                .addQueryParameter("language", langCode)
-                .addQueryParameter("sort", "number")
-                .addQueryParameter("order", "desc")
-                .addQueryParameter("page", "1")
-                .addQueryParameter("limit", "200")
-                .build()
-            val firstData = client.get(firstUrl).parseAs<ApiResponse<ChapterDto>>()
-            val allItems = firstData.items.toMutableList()
-            val lastPage = firstData.meta?.lastPage ?: 1
+            var page = 1
+            var hasNext = true
+            val allItems = mutableListOf<ChapterDto>()
 
-            if (lastPage > 1) {
-                val deferred = (2..lastPage).map { page ->
-                    async {
-                        val url = "$baseUrl/api/titles/$hid/chapters".toHttpUrl().newBuilder()
-                            .addQueryParameter("language", langCode)
-                            .addQueryParameter("sort", "number")
-                            .addQueryParameter("order", "desc")
-                            .addQueryParameter("page", page.toString())
-                            .addQueryParameter("limit", "200")
-                            .build()
-                        client.get(url).parseAs<ApiResponse<ChapterDto>>().items
-                    }
-                }
-                deferred.awaitAll().forEach { allItems.addAll(it) }
+            // MangaFire's current API exposes pagination through meta.hasNext.
+            // Follow that flag instead of relying on lastPage being present.
+            while (hasNext) {
+                val url = "$baseUrl/api/titles/$hid/chapters".toHttpUrl().newBuilder()
+                    .addQueryParameter("language", langCode)
+                    .addQueryParameter("sort", "number")
+                    .addQueryParameter("order", "desc")
+                    .addQueryParameter("page", page.toString())
+                    .addQueryParameter("limit", "200")
+                    .build()
+                val data = client.get(url).parseAs<ApiResponse<ChapterDto>>()
+                allItems.addAll(data.items)
+                hasNext = data.meta?.hasNext == true
+                page++
             }
+
             chapters.addAll(allItems.map { it.toSChapter(manga.url, langCode) })
         }
 
-        chapters.let {
-            if (!displayVolumes && mergeChapters) {
-                it.sortedBy { chapter ->
-                    val isOfficial = chapter.scanlator!!.lowercase() == "official"
-                    if (preferOfficial) !isOfficial else isOfficial
-                }.distinctBy { it.chapter_number }.sortedByDescending { it.chapter_number }
-            } else it
+        if (!displayVolumes && mergeChapters) {
+            chapters.sortedBy { chapter ->
+                val isOfficial = chapter.scanlator.orEmpty().lowercase() == "official"
+                if (preferOfficial) !isOfficial else isOfficial
+            }.distinctBy { it.chapter_number }.sortedByDescending { it.chapter_number }
+        } else {
+            chapters
         }
     }
 
