@@ -60,6 +60,9 @@ jobs:
           APK="$(find src/en/mangafire/build/outputs/apk/debug -maxdepth 1 -type f -name '*.apk' | head -n 1)"
           test -n "$APK"
 
+          SIGNING_KEY_FINGERPRINT="$(apksigner verify --print-certs "$APK" | awk -F': ' '/Signer #1 certificate SHA-256 digest:/ {print $2; exit}' | tr -d '[:space:]')"
+          test -n "$SIGNING_KEY_FINGERPRINT"
+
           rm -rf /tmp/tachimanga-repo
           git clone --branch repo --single-branch "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" /tmp/tachimanga-repo
 
@@ -83,6 +86,7 @@ jobs:
                   "name": "MangaFire",
                   "lang": "en",
                   "id": "1",
+                  "versionId": 1,
                   "baseUrl": "https://mangafire.to"
                 }
               ]
@@ -91,6 +95,19 @@ jobs:
           EOF
 
           cp index.json index.min.json
+
+          cat > repo.json <<EOF
+          {
+            "index_v2": null,
+            "meta": {
+              "name": "WavyKisuke MangaFire",
+              "shortName": "MangaFire",
+              "website": "https://github.com/WavyKisuke/extensions-source",
+              "signingKeyFingerprint": "${SIGNING_KEY_FINGERPRINT}"
+            }
+          }
+          EOF
+
           cat > README.md <<'EOF'
           # WavyKisuke TachiManga Extensions
 
@@ -107,5 +124,5 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-# Publish trigger: verify the v1.4.4 build reaches the repo branch.
+# Publish trigger: keep the TachiManga legacy repository metadata in sync with the APK signer.
 # Triggered through the GitHub Contents API to force a real push event.
