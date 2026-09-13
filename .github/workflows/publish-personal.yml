@@ -22,10 +22,10 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  VERSION_NAME: 1.6.9
-  VERSION_CODE: 9
-  APK_NAME: tachiyomi-en.mangafire-v1.6.9.apk
-  APK_URL: https://raw.githubusercontent.com/WavyKisuke/extensions-source/repo/apk/tachiyomi-en.mangafire-v1.6.9.apk
+  VERSION_NAME: 1.6.10
+  VERSION_CODE: 10
+  APK_NAME: tachiyomi-en.mangafire-v1.6.10.apk
+  APK_URL: https://raw.githubusercontent.com/WavyKisuke/extensions-source/repo/apk/tachiyomi-en.mangafire-v1.6.10.apk
 
 jobs:
   build-and-publish:
@@ -51,8 +51,8 @@ jobs:
       - name: Format MangaFire source
         run: ./gradlew :src:en:mangafire:spotlessApply --no-daemon
 
-      - name: Build MangaFire debug APK
-        run: ./gradlew :src:en:mangafire:assembleDebug --no-daemon
+      - name: Clean and build MangaFire debug APK
+        run: ./gradlew :src:en:mangafire:clean :src:en:mangafire:assembleDebug --no-daemon --stacktrace
 
       - name: Prepare extension repository
         shell: bash
