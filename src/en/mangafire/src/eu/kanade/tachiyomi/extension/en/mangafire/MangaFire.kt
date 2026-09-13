@@ -3,6 +3,7 @@ package eu.kanade.tachiyomi.extension.en.mangafire
 import androidx.preference.MultiSelectListPreference
 import androidx.preference.PreferenceScreen
 import androidx.preference.SwitchPreferenceCompat
+import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.source.ConfigurableSource
 import eu.kanade.tachiyomi.source.model.Filter
 import eu.kanade.tachiyomi.source.model.FilterList
@@ -21,6 +22,8 @@ import rx.Observable
 
 @Source
 abstract class MangaFire : HttpSource(), ConfigurableSource {
+
+    override val supportsLatest: Boolean = true
 
     override val client = super.client.newBuilder()
         .addInterceptor(VrfSigner().interceptor())
