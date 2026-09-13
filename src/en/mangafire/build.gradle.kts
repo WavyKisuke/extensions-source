@@ -6,12 +6,13 @@ plugins {
 
 keiyoushi {
     name = "MangaFire"
-    versionCode = 4
+    versionCode = 5
     contentWarning = ContentWarning.MIXED
-    libVersion = "1.6"
+    // Build against extension-lib 1.4 for compatibility with older Tachimanga builds.
+    libVersion = "1.4"
 
     // Publish trigger marker.
-    // Force a fresh CI build for the v1.4.4 personal repository.
+    // Compatibility build after the lib 1.6 IncompatibleClassChangeError.
     source {
         name = "MangaFire"
         lang = "en"
