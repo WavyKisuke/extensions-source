@@ -6,19 +6,14 @@ plugins {
 
 keiyoushi {
     name = "MangaFire"
-    versionCode = 7
+    versionCode = 8
     contentWarning = ContentWarning.MIXED
-    // Use the modern KeiSource contract required by current Tachimanga.
-    libVersion = "1.6"
+    // Use the legacy 1.4 source contract for maximum Tachimanga compatibility.
+    libVersion = "1.4"
 
     source {
         name = "MangaFire"
         lang = "en"
         baseUrl = "https://mangafire.to"
-    }
-
-    deeplink {
-        host("mangafire.to")
-        path("/title/..*")
     }
 }
