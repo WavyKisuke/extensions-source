@@ -9,46 +9,92 @@ from google.protobuf import json_format
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import index_pb2  # noqa: E402
 
-VERSION_NAME = "1.6.15"
-VERSION_CODE = 15
-PACKAGE = "eu.kanade.tachiyomi.extension.en.mangafire"
-SOURCE_ID = 6084907896154116083
-APK_URL = "https://raw.githubusercontent.com/WavyKisuke/extensions-source/repo/apk/tachiyomi-en.mangafire-v1.6.15.apk"
-JAR_URL = "https://raw.githubusercontent.com/WavyKisuke/extensions-source/repo/jar/tachiyomi-en.mangafire-v1.6.15.jar"
 SIGNING_KEY = sys.argv[1] if len(sys.argv) > 1 else ""
+repo_dir = Path(sys.argv[2]) if len(sys.argv) > 2 else Path(".")
+repo_dir.mkdir(parents=True, exist_ok=True)
 
-ext = index_pb2.Extension(
-    name="MangaFire",
-    packageName=PACKAGE,
-    resources=index_pb2.Resources(
-        apkUrl=APK_URL,
-        jarUrl=JAR_URL,
-        iconUrl="https://raw.githubusercontent.com/WavyKisuke/extensions-source/main/src/en/mangafire/res/mipmap-xhdpi/ic_launcher.png",
-    ),
-    extensionLib="1.6",
-    versionCode=VERSION_CODE,
-    versionName=VERSION_NAME,
-    contentWarning=index_pb2.CONTENT_WARNING_MIXED,
-    sources=[
-        index_pb2.Source(
-            id=SOURCE_ID,
-            name="MangaFire",
-            language="en",
-            homeUrl="https://mangafire.to",
+MANGA_FIRE = {
+    "name": "MangaFire",
+    "package": "eu.kanade.tachiyomi.extension.en.mangafire",
+    "source_id": 6084907896154116083,
+    "version_name": "1.6.15",
+    "version_code": 15,
+    "apk_url": "https://raw.githubusercontent.com/WavyKisuke/extensions-source/repo/apk/tachiyomi-en.mangafire-v1.6.15.apk",
+    "jar_url": "https://raw.githubusercontent.com/WavyKisuke/extensions-source/repo/jar/tachiyomi-en.mangafire-v1.6.15.jar",
+    "icon_url": "https://raw.githubusercontent.com/WavyKisuke/extensions-source/main/src/en/mangafire/res/mipmap-xhdpi/ic_launcher.png",
+    "base_url": "https://mangafire.to",
+    "warning": index_pb2.CONTENT_WARNING_MIXED,
+}
+
+BATCAVE = {
+    "name": "BatCave",
+    "package": "eu.kanade.tachiyomi.extension.en.batcave",
+    "source_id": 7422099479605463706,
+    "version_name": "1.6.13",
+    "version_code": 13,
+    "apk_url": "https://raw.githubusercontent.com/WavyKisuke/extensions-source/repo/apk/tachiyomi-en.batcave-v1.6.13.apk",
+    "jar_url": "https://raw.githubusercontent.com/WavyKisuke/extensions-source/repo/jar/tachiyomi-en.batcave-v1.6.13.jar",
+    "icon_url": "https://raw.githubusercontent.com/WavyKisuke/extensions-source/main/src/en/batcave/res/mipmap-xhdpi/ic_launcher.png",
+    "base_url": "https://batcave.biz",
+    "warning": index_pb2.CONTENT_WARNING_SAFE,
+}
+
+EXTENSIONS = [MANGA_FIRE, BATCAVE]
+
+protobuf_extensions = []
+legacy_extensions = []
+for item in EXTENSIONS:
+    protobuf_extensions.append(
+        index_pb2.Extension(
+            name=item["name"],
+            packageName=item["package"],
+            resources=index_pb2.Resources(
+                apkUrl=item["apk_url"],
+                jarUrl=item["jar_url"],
+                iconUrl=item["icon_url"],
+            ),
+            extensionLib="1.6",
+            versionCode=item["version_code"],
+            versionName=item["version_name"],
+            contentWarning=item["warning"],
+            sources=[
+                index_pb2.Source(
+                    id=item["source_id"],
+                    name=item["name"],
+                    language="en",
+                    homeUrl=item["base_url"],
+                )
+            ],
         )
-    ],
-)
+    )
+    legacy_extensions.append(
+        {
+            "name": item["name"],
+            "pkg": item["package"],
+            "lang": "en",
+            "code": item["version_code"],
+            "version": item["version_name"],
+            "apk": item["apk_url"],
+            "jar": item["jar_url"],
+            "nsfw": False,
+            "sources": [
+                {
+                    "id": str(item["source_id"]),
+                    "name": item["name"],
+                    "lang": "en",
+                    "baseUrl": item["base_url"],
+                }
+            ],
+        }
+    )
 
 index = index_pb2.Index(
-    name="WavyKisuke MangaFire",
+    name="WavyKisuke Extensions",
     badgeLabel="MANGA",
     signingKey=SIGNING_KEY,
     contact=index_pb2.Contact(website="https://github.com/WavyKisuke/extensions-source"),
-    extensionList=index_pb2.ExtensionList(extensions=[ext]),
+    extensionList=index_pb2.ExtensionList(extensions=protobuf_extensions),
 )
-
-repo_dir = Path(sys.argv[2]) if len(sys.argv) > 2 else Path(".")
-repo_dir.mkdir(parents=True, exist_ok=True)
 
 with (repo_dir / "index.json").open("w", encoding="utf-8") as f:
     f.write(json_format.MessageToJson(index, preserving_proto_field_name=True, always_print_fields_with_no_presence=False))
@@ -62,8 +108,8 @@ with (repo_dir / "repo.json").open("w", encoding="utf-8") as f:
         {
             "index_v2": "https://raw.githubusercontent.com/WavyKisuke/extensions-source/repo/index.pb",
             "meta": {
-                "name": "WavyKisuke MangaFire",
-                "shortName": "MangaFire",
+                "name": "WavyKisuke Extensions",
+                "shortName": "WavyKisuke",
                 "website": "https://github.com/WavyKisuke/extensions-source",
                 "signingKeyFingerprint": SIGNING_KEY,
             },
@@ -74,28 +120,5 @@ with (repo_dir / "repo.json").open("w", encoding="utf-8") as f:
     f.write("\n")
 
 with (repo_dir / "index.min.json").open("w", encoding="utf-8") as f:
-    json.dump(
-        [
-            {
-                "name": "MangaFire",
-                "pkg": PACKAGE,
-                "lang": "en",
-                "code": VERSION_CODE,
-                "version": VERSION_NAME,
-                "apk": APK_URL,
-                "jar": JAR_URL,
-                "nsfw": False,
-                "sources": [
-                    {
-                        "id": str(SOURCE_ID),
-                        "name": "MangaFire",
-                        "lang": "en",
-                        "baseUrl": "https://mangafire.to",
-                    }
-                ],
-            }
-        ],
-        f,
-        indent=2,
-    )
+    json.dump(legacy_extensions, f, indent=2)
     f.write("\n")
