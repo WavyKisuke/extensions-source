@@ -2,16 +2,16 @@
   {
     "name": "MangaFire",
     "pkg": "eu.kanade.tachiyomi.extension.en.mangafire",
-    "apk": "https://raw.githubusercontent.com/WavyKisuke/extensions-source/repo/apk/tachiyomi-en.mangafire-v1.4.8.apk",
+    "apk": "https://raw.githubusercontent.com/WavyKisuke/extensions-source/repo/apk/tachiyomi-en.mangafire-v1.6.11.apk",
     "lang": "en",
-    "code": 8,
-    "version": "1.4.8",
+    "code": 106011,
+    "version": "1.6.11",
     "nsfw": 1,
     "sources": [
       {
         "name": "MangaFire",
         "lang": "en",
-        "id": "1",
+        "id": "6.08490789615412E+18",
         "versionId": 1,
         "baseUrl": "https://mangafire.to"
       }
