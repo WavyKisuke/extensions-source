@@ -21,7 +21,7 @@ permissions:
 
 concurrency:
   group: personal-tachimanga-repo
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 env:
   MANGAFIRE_VERSION_NAME: 1.6.15
@@ -31,11 +31,11 @@ env:
   MANGAFIRE_JAR_NAME: tachiyomi-en.mangafire-v1.6.15.jar
   MANGAFIRE_PACKAGE: eu.kanade.tachiyomi.extension.en.mangafire
 
-  BATCAVE_VERSION_NAME: 1.6.18
-  BATCAVE_SOURCE_VERSION_CODE: 18
-  BATCAVE_ANDROID_VERSION_CODE: 106018
-  BATCAVE_APK_NAME: tachiyomi-en.batcave2-v1.6.18.apk
-  BATCAVE_JAR_NAME: tachiyomi-en.batcave2-v1.6.18.jar
+  BATCAVE_VERSION_NAME: 1.6.19
+  BATCAVE_SOURCE_VERSION_CODE: 19
+  BATCAVE_ANDROID_VERSION_CODE: 106019
+  BATCAVE_APK_NAME: tachiyomi-en.batcave2-v1.6.19.apk
+  BATCAVE_JAR_NAME: tachiyomi-en.batcave2-v1.6.19.jar
   BATCAVE_PACKAGE: eu.kanade.tachiyomi.extension.en.batcave2
 
 jobs:
