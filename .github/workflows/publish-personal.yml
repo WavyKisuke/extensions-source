@@ -108,3 +108,4 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 # Publish trigger: verify the v1.4.4 build reaches the repo branch.
+# Triggered through the GitHub Contents API to force a real push event.
