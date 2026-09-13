@@ -15,7 +15,11 @@ import keiyoushi.utils.parseAs
 import keiyoushi.utils.toJsonRequestBody
 import okhttp3.FormBody
 import okhttp3.HttpUrl
+import okhttp3.OkHttpClient
 import org.jsoup.nodes.Document
+import java.net.URLEncoder
+import java.time.LocalDate
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
 @Source
@@ -37,28 +41,25 @@ abstract class BatCave : KeiSource() {
 
     override suspend fun getSearchMangaList(page: Int, query: String, filters: FilterList): MangasPage {
         if (query.isNotBlank()) {
-            val encoded = java.net.URLEncoder.encode(query.trim(), "UTF-8")
+            val encoded = URLEncoder.encode(query.trim(), "UTF-8")
             val url = if (page == 1) "$baseUrl/search/$encoded/" else "$baseUrl/search/$encoded/page/$page/"
             return parseCards(client.get(url).asJsoup())
         }
 
         val sort = filters.filterIsInstance<SortFilter>().firstOrNull() ?: SortFilter()
-        val path = buildFilterPath(filters)
+        val parts = mutableListOf<String>()
+        filters.filterIsInstance<YearFilter>().firstOrNull()?.appendTo(parts)
+        filters.filterIsInstance<PublisherFilter>().firstOrNull()?.appendTo(parts)
+        filters.filterIsInstance<GenreFilter>().firstOrNull()?.appendTo(parts)
+        if (parts.isEmpty()) parts += "y[from]=1929/y[to]=2099/"
+
         val pagePath = if (page > 1) "page/$page/" else ""
-        val url = "$baseUrl/ComicList/$path$pagePath"
+        val url = "$baseUrl/ComicList/${parts.joinToString("")}$pagePath"
         val body = FormBody.Builder()
             .add("dlenewssortby", sort.key())
             .add("dledirection", sort.direction())
             .build()
         return parseCards(client.post(url, body).asJsoup())
-    }
-
-    private fun buildFilterPath(filters: FilterList): String {
-        val parts = mutableListOf<String>()
-        filters.filterIsInstance<YearFilter>().firstOrNull()?.appendTo(parts)
-        filters.filterIsInstance<PublisherFilter>().firstOrNull()?.appendTo(parts)
-        filters.filterIsInstance<GenreFilter>().firstOrNull()?.appendTo(parts)
-        return if (parts.isEmpty()) "y[from]=1929/y[to]=2099/" else parts.joinToString("")
     }
 
     private fun parseCards(doc: Document): MangasPage {
@@ -97,8 +98,7 @@ abstract class BatCave : KeiSource() {
         it.text().trim().equals("Next", true) || it.text().trim() == "›"
     }
 
-    override suspend fun getMangaByUrl(url: HttpUrl): SManga? =
-        parseDetails(client.get(url).asJsoup())
+    override suspend fun getMangaByUrl(url: HttpUrl): SManga? = parseDetails(client.get(url).asJsoup())
 
     override suspend fun fetchMangaUpdate(
         manga: SManga,
@@ -116,7 +116,7 @@ abstract class BatCave : KeiSource() {
     private fun parseDetails(doc: Document): SManga = SManga.create().apply {
         setUrlWithoutDomain(doc.location())
         title = doc.selectFirst("header.page__header h1, h1")?.text()?.trim().orEmpty()
-        thumbnail_url = doc.selectFirst("div.page__poster img, .page__poster img")?.let { image ->
+        thumbnail_url = doc.selectFirst(".page__poster img")?.let { image ->
             image.absUrl(if (image.hasAttr("data-src")) "data-src" else "src")
         }
         author = info(doc, "Writer")
@@ -147,18 +147,19 @@ abstract class BatCave : KeiSource() {
             .substringBeforeLast(';')
             .trim()
             .takeIf { it.startsWith("{") } ?: return emptyList()
-        return runCatching { json.parseAs<ChapterData>().chapters.map { chapter ->
+        val data = runCatching { json.parseAs<ChapterData>() }.getOrNull() ?: return emptyList()
+        return data.chapters.map { chapter ->
             SChapter.create().apply {
-                url = "/reader/${chapterDataId(json)}/${chapter.id}"
+                url = "/reader/${data.comicId}/${chapter.id}"
                 name = chapter.title
                 chapter_number = chapter.number
-                date_upload = DATE.tryParse(chapter.date)
+                date_upload = runCatching {
+                    LocalDate.parse(chapter.date, DATE)
+                        .atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+                }.getOrDefault(0L)
             }
-        } }.getOrDefault(emptyList())
+        }
     }
-
-    private fun chapterDataId(json: String): Int =
-        runCatching { json.parseAs<ChapterData>().comicId }.getOrDefault(0)
 
     override suspend fun getPageList(chapter: SChapter): List<Page> {
         val ids = chapter.url.substringAfter("/reader/").split('/')
@@ -172,13 +173,12 @@ abstract class BatCave : KeiSource() {
         }
     }
 
-    private fun String.toAbsoluteUrl(base: String): String =
-        when {
-            startsWith("http://") || startsWith("https://") -> this
-            startsWith("//") -> "https:$this"
-            startsWith("/") -> base + this
-            else -> "$base/$this"
-        }
+    private fun String.toAbsoluteUrl(base: String): String = when {
+        startsWith("http://") || startsWith("https://") -> this
+        startsWith("//") -> "https:$this"
+        startsWith("/") -> base + this
+        else -> "$base/$this"
+    }
 
     override val supportsFilterFetching = true
 
@@ -187,19 +187,20 @@ abstract class BatCave : KeiSource() {
             .selectFirst("script:containsData(__XFILTER__)")?.data()
             ?.substringAfter("window.__XFILTER__ =", "")
             ?.substringBeforeLast(';')?.trim()
-            ?.parseAs<XFilters>()?.filterItems ?: kotlinx.serialization.json.JsonNull
+            ?.let { runCatching { it.parseAs<XFilters>().filterItems }.getOrNull() }
+            ?: kotlinx.serialization.json.JsonNull
 
     override fun getFilterList(data: kotlinx.serialization.json.JsonElement?): FilterList {
         val parsed = runCatching { data?.parseAs<XFilterItems>() }.getOrNull()
-        val publishers = parsed?.publisher?.values?.map { it.value to it.id } ?: emptyList()
-        val genres = parsed?.genre?.values?.map { it.value to it.id } ?: emptyList()
         return FilterList(
             SortFilter(),
             YearFilter(),
-            PublisherFilter(publishers),
-            GenreFilter(genres),
+            PublisherFilter(parsed?.publisher?.values?.map { it.value to it.id } ?: emptyList()),
+            GenreFilter(parsed?.genre?.values?.map { it.value to it.id } ?: emptyList()),
         )
     }
 
-    private val DATE = DateTimeFormatter.ofPattern("d.M.yyyy")
+    private companion object {
+        val DATE: DateTimeFormatter = DateTimeFormatter.ofPattern("d.M.yyyy")
+    }
 }
