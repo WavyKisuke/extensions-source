@@ -59,11 +59,18 @@ jobs:
           set -euo pipefail
           APK="$(find src/en/mangafire/build/outputs/apk/debug -maxdepth 1 -type f -name '*.apk' | head -n 1)"
           test -n "$APK"
+          echo "APK: $APK"
 
-          APKSIGNER="$(find "${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}/build-tools" -type f -name apksigner | sort -V | tail -n 1)"
+          SDK_ROOT="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-$HOME/Android/Sdk}}"
+          APKSIGNER="$(find "$SDK_ROOT/build-tools" -type f -name apksigner -perm -u+x | sort -V | tail -n 1)"
           test -n "$APKSIGNER"
-          SIGNING_KEY_FINGERPRINT="$($APKSIGNER verify --print-certs "$APK" | awk -F': ' '/Signer #1 certificate SHA-256 digest:/ {print $2; exit}' | tr -d '[:space:]')"
+          echo "apksigner: $APKSIGNER"
+
+          CERT_OUTPUT="$($APKSIGNER verify --print-certs "$APK" 2>&1 || true)"
+          echo "$CERT_OUTPUT"
+          SIGNING_KEY_FINGERPRINT="$(printf '%s\n' "$CERT_OUTPUT" | grep -m1 -oE '[0-9A-Fa-f]{64}' || true)"
           test -n "$SIGNING_KEY_FINGERPRINT"
+          echo "Signing certificate fingerprint detected."
 
           rm -rf /tmp/tachimanga-repo
           git clone --branch repo --single-branch "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" /tmp/tachimanga-repo
@@ -121,8 +128,8 @@ jobs:
           git config user.name "WavyKisuke"
           git config user.email "327378209+WavyKisuke@users.noreply.github.com"
           git add -A
-          git commit -m "Publish MangaFire ${VERSION_NAME}"
-          git push --force origin HEAD:refs/heads/repo
+          git commit -m "Publish MangaFire ${VERSION_NAME}" || true
+          git -c http.extraheader="AUTHORIZATION: bearer ${GITHUB_TOKEN}" push --force origin HEAD:refs/heads/repo
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
