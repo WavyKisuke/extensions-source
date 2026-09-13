@@ -6,10 +6,9 @@ plugins {
 
 keiyoushi {
     name = "MangaFire"
-    versionCode = 5
+    versionCode = 6
     contentWarning = ContentWarning.MIXED
     // Legacy HttpSource build for compatibility with older Tachimanga/Mihon forks.
-    // Trigger a clean CI rebuild after the compatibility source fixes.
     libVersion = "1.4"
 
     source {
