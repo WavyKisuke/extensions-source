@@ -23,7 +23,7 @@ concurrency:
 
 env:
   VERSION_NAME: 1.6.11
-  VERSION_CODE: 11
+  VERSION_CODE: 106011
   APK_NAME: tachiyomi-en.mangafire-v1.6.11.apk
   APK_URL: https://raw.githubusercontent.com/WavyKisuke/extensions-source/repo/apk/tachiyomi-en.mangafire-v1.6.11.apk
   SOURCE_ID: 6084907896154116083
