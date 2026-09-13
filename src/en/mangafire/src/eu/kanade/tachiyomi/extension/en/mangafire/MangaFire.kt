@@ -273,11 +273,11 @@ abstract class MangaFire :
             key = PREF_PREFER_OFFICIAL
             title = "Prefer official chapters"
             setDefaultValue(true)
-            isEnabled = mergeChapters
+            setEnabled(mergeChapters)
         }.also(screen::addPreference)
 
         mergeChaptersPref.setOnPreferenceChangeListener { _, newValue ->
-            preferOfficialPref.isEnabled = newValue as Boolean
+            preferOfficialPref.setEnabled(newValue as Boolean)
             true
         }
     }
