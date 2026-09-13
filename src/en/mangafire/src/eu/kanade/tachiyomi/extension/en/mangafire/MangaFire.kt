@@ -30,7 +30,6 @@ import okhttp3.Response
 
 @Source
 abstract class MangaFire : KeiSource(), ConfigurableSource {
-    // Build-trigger marker: keep this source on the generated KeiSource API.
     override fun OkHttpClient.Builder.configureClient() = apply {
         rateLimit(2)
         addInterceptor(VrfSigner().interceptor())
@@ -238,11 +237,11 @@ abstract class MangaFire : KeiSource(), ConfigurableSource {
             key = PREF_PREFER_OFFICIAL
             title = "Prefer official chapters"
             setDefaultValue(true)
-            isEnabled = mergeChapters
+            setEnabled(mergeChapters)
         }.also(screen::addPreference)
 
         merge.setOnPreferenceChangeListener { _, value ->
-            official.isEnabled = value as Boolean
+            official.setEnabled(value as Boolean)
             true
         }
     }
