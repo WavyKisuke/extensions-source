@@ -1,7 +1,7 @@
 {
   "name": "WavyKisuke MangaFire",
   "badgeLabel": "MANGA",
-  "signingKey": "88af6c7c52431a2020f693e3b35a8b528b563e585ee9d0fea43ff555a40c4321",
+  "signingKey": "15580e6a2df44164c15d49089d885b8f528f1d93e4bf2dd188b52a8aea93a3e9",
   "contact": {
     "website": "https://github.com/WavyKisuke/extensions-source"
   },
@@ -11,13 +11,13 @@
         "name": "MangaFire",
         "packageName": "eu.kanade.tachiyomi.extension.en.mangafire",
         "resources": {
-          "apkUrl": "https://raw.githubusercontent.com/WavyKisuke/extensions-source/repo/apk/tachiyomi-en.mangafire-v1.6.12.apk",
+          "apkUrl": "https://raw.githubusercontent.com/WavyKisuke/extensions-source/repo/apk/tachiyomi-en.mangafire-v1.6.13.apk",
           "iconUrl": "https://raw.githubusercontent.com/WavyKisuke/extensions-source/main/src/en/mangafire/res/mipmap-xhdpi/ic_launcher.png",
-          "jarUrl": "https://raw.githubusercontent.com/WavyKisuke/extensions-source/repo/jar/tachiyomi-en.mangafire-v1.6.12.jar"
+          "jarUrl": "https://raw.githubusercontent.com/WavyKisuke/extensions-source/repo/jar/tachiyomi-en.mangafire-v1.6.13.jar"
         },
         "extensionLib": "1.6",
-        "versionCode": "12",
-        "versionName": "1.6.12",
+        "versionCode": "13",
+        "versionName": "1.6.13",
         "contentWarning": "CONTENT_WARNING_MIXED",
         "sources": [
           {
