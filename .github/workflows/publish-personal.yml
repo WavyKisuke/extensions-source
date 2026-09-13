@@ -25,7 +25,7 @@ env:
   VERSION_NAME: 1.4.4
   VERSION_CODE: 4
   APK_NAME: tachiyomi-en.mangafire-v1.4.4.apk
-  APK_URL: https://media.githubusercontent.com/media/WavyKisuke/extensions-source/repo/tachiyomi-en.mangafire-v1.4.4.apk
+  APK_URL: https://raw.githubusercontent.com/WavyKisuke/extensions-source/repo/tachiyomi-en.mangafire-v1.4.4.apk
 
 jobs:
   build-and-publish:
@@ -145,4 +145,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-# Publish trigger: keep the TachiManga legacy repository metadata in sync with the APK signer.
+# APK download URL is intentionally a raw.githubusercontent.com URL for Tachimanga compatibility.
