@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - 'src/en/mangafire/**'
+      - 'scripts/**'
       - 'build-logic/**'
       - 'gradle/**'
       - 'gradle.properties'
@@ -22,10 +23,11 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  VERSION_NAME: 1.6.11
-  VERSION_CODE: 106011
-  APK_NAME: tachiyomi-en.mangafire-v1.6.11.apk
-  APK_URL: https://raw.githubusercontent.com/WavyKisuke/extensions-source/repo/apk/tachiyomi-en.mangafire-v1.6.11.apk
+  VERSION_NAME: 1.6.12
+  SOURCE_VERSION_CODE: 12
+  ANDROID_VERSION_CODE: 106012
+  APK_NAME: tachiyomi-en.mangafire-v1.6.12.apk
+  JAR_NAME: tachiyomi-en.mangafire-v1.6.12.jar
   SOURCE_ID: "6084907896154116083"
 
 jobs:
@@ -49,105 +51,84 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
 
+      - name: Install protobuf runtime
+        run: python3 -m pip install --user protobuf
+
       - name: Format MangaFire source
         run: ./gradlew :src:en:mangafire:spotlessApply --no-daemon
 
-      - name: Clean and build MangaFire debug APK
-        run: ./gradlew :src:en:mangafire:clean :src:en:mangafire:assembleDebug --no-daemon --stacktrace
+      - name: Build release APK and JAR
+        run: ./gradlew :src:en:mangafire:clean :src:en:mangafire:assembleRelease --no-daemon --stacktrace
 
-      - name: Verify APK identity and signing certificate
+      - name: Verify APK and JAR
         shell: bash
         run: |
           set -euo pipefail
-          APK="$(find src/en/mangafire/build/outputs/apk/debug -maxdepth 1 -type f -name '*.apk' | head -n 1)"
+          APK="$(find src/en/mangafire/build/outputs/apk/release -maxdepth 1 -type f -name '*.apk' | head -n 1)"
+          JAR="$(find src/en/mangafire/build/outputs/jar/release -maxdepth 1 -type f -name '*.jar' | head -n 1)"
           test -n "$APK"
-          echo "APK: $APK"
+          test -n "$JAR"
+          echo "APK=$APK"
+          echo "JAR=$JAR"
 
           SDK_ROOT="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-$HOME/Android/Sdk}}"
           BUILD_TOOLS="$(find "$SDK_ROOT/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -n 1)"
-          APKSIGNER="$BUILD_TOOLS/apksigner"
           AAPT="$BUILD_TOOLS/aapt"
-          test -x "$APKSIGNER"
+          APKSIGNER="$BUILD_TOOLS/apksigner"
           test -x "$AAPT"
+          test -x "$APKSIGNER"
 
           BADGING="$($AAPT dump badging "$APK")"
           echo "$BADGING"
           echo "$BADGING" | grep -F "package: name='eu.kanade.tachiyomi.extension.en.mangafire'" >/dev/null
-          echo "$BADGING" | grep -F "versionCode='${VERSION_CODE}'" >/dev/null
+          echo "$BADGING" | grep -F "versionCode='${ANDROID_VERSION_CODE}'" >/dev/null
           echo "$BADGING" | grep -F "versionName='${VERSION_NAME}'" >/dev/null
 
           CERT_OUTPUT="$($APKSIGNER verify --print-certs "$APK" 2>&1 || true)"
           echo "$CERT_OUTPUT"
           SIGNING_KEY_FINGERPRINT="$(printf '%s\n' "$CERT_OUTPUT" | grep -m1 -oE '[0-9A-Fa-f]{64}' || true)"
           test -n "$SIGNING_KEY_FINGERPRINT"
+
+          unzip -t "$JAR" >/dev/null
           echo "SIGNING_KEY_FINGERPRINT=$SIGNING_KEY_FINGERPRINT" >> "$GITHUB_ENV"
           echo "APK_PATH=$APK" >> "$GITHUB_ENV"
+          echo "JAR_PATH=$JAR" >> "$GITHUB_ENV"
 
-      - name: Prepare extension repository
+      - name: Prepare TachiManga repository
         shell: bash
         run: |
           set -euo pipefail
           rm -rf /tmp/tachimanga-repo
           git clone --branch repo --single-branch "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" /tmp/tachimanga-repo
-
           cd /tmp/tachimanga-repo
           git fetch origin repo
           git checkout -B repo origin/repo
+
           find . -maxdepth 1 -type f -delete
-          rm -rf apk
-          mkdir -p apk
+          rm -rf apk jar
+          mkdir -p apk jar
           cp "$GITHUB_WORKSPACE/$APK_PATH" "apk/${APK_NAME}"
+          cp "$GITHUB_WORKSPACE/$JAR_PATH" "jar/${JAR_NAME}"
 
-          cat > index.json <<EOF
-          [
-            {
-              "name": "MangaFire",
-              "pkg": "eu.kanade.tachiyomi.extension.en.mangafire",
-              "apk": "${APK_URL}",
-              "lang": "en",
-              "code": ${VERSION_CODE},
-              "version": "${VERSION_NAME}",
-              "nsfw": 1,
-              "sources": [
-                {
-                  "name": "MangaFire",
-                  "lang": "en",
-                  "id": "${SOURCE_ID}",
-                  "versionId": 1,
-                  "baseUrl": "https://mangafire.to"
-                }
-              ]
-            }
-          ]
-          EOF
-
-          cp index.json index.min.json
-
-          cat > repo.json <<EOF
-          {
-            "index_v2": null,
-            "meta": {
-              "name": "WavyKisuke MangaFire",
-              "shortName": "MangaFire",
-              "website": "https://github.com/WavyKisuke/extensions-source",
-              "signingKeyFingerprint": "${SIGNING_KEY_FINGERPRINT}"
-            }
-          }
-          EOF
+          python3 "$GITHUB_WORKSPACE/scripts/generate-tachimanga-repo.py" "$SIGNING_KEY_FINGERPRINT" .
 
           cat > README.md <<'EOF'
           # WavyKisuke TachiManga Extensions
 
-          Personal TachiManga extension repository.
+          Recommended repository URL:
+          `https://raw.githubusercontent.com/WavyKisuke/extensions-source/repo/repo.json`
 
-          Repository index: `https://raw.githubusercontent.com/WavyKisuke/extensions-source/repo/index.min.json`
+          Legacy index:
+          `https://raw.githubusercontent.com/WavyKisuke/extensions-source/repo/index.min.json`
+
+          This repository publishes both APK and JAR packages. TachiManga should use the JAR resource from the modern `repo.json` / `index.pb` repository format.
           EOF
 
           git config user.name "WavyKisuke"
           git config user.email "327378209+WavyKisuke@users.noreply.github.com"
           git add -A
           if ! git diff --cached --quiet; then
-            git commit -m "Publish MangaFire ${VERSION_NAME}"
+            git commit -m "Publish MangaFire ${VERSION_NAME} JAR"
           fi
           git remote set-url origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
           git push origin HEAD:refs/heads/repo
