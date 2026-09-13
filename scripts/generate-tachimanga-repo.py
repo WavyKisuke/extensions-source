@@ -9,12 +9,12 @@ from google.protobuf import json_format
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import index_pb2  # noqa: E402
 
-VERSION_NAME = "1.6.14"
-VERSION_CODE = 14
+VERSION_NAME = "1.6.15"
+VERSION_CODE = 15
 PACKAGE = "eu.kanade.tachiyomi.extension.en.mangafire"
 SOURCE_ID = 6084907896154116083
-APK_URL = "https://raw.githubusercontent.com/WavyKisuke/extensions-source/repo/apk/tachiyomi-en.mangafire-v1.6.14.apk"
-JAR_URL = "https://raw.githubusercontent.com/WavyKisuke/extensions-source/repo/jar/tachiyomi-en.mangafire-v1.6.14.jar"
+APK_URL = "https://raw.githubusercontent.com/WavyKisuke/extensions-source/repo/apk/tachiyomi-en.mangafire-v1.6.15.apk"
+JAR_URL = "https://raw.githubusercontent.com/WavyKisuke/extensions-source/repo/jar/tachiyomi-en.mangafire-v1.6.15.jar"
 SIGNING_KEY = sys.argv[1] if len(sys.argv) > 1 else ""
 
 ext = index_pb2.Extension(
@@ -79,23 +79,23 @@ with (repo_dir / "index.min.json").open("w", encoding="utf-8") as f:
             {
                 "name": "MangaFire",
                 "pkg": PACKAGE,
-                "apk": APK_URL,
                 "lang": "en",
                 "code": VERSION_CODE,
                 "version": VERSION_NAME,
-                "nsfw": 1,
+                "apk": APK_URL,
+                "jar": JAR_URL,
+                "nsfw": False,
                 "sources": [
                     {
+                        "id": str(SOURCE_ID),
                         "name": "MangaFire",
                         "lang": "en",
-                        "id": str(SOURCE_ID),
-                        "versionId": 1,
                         "baseUrl": "https://mangafire.to",
                     }
                 ],
             }
         ],
         f,
-        separators=(",", ":"),
+        indent=2,
     )
     f.write("\n")
