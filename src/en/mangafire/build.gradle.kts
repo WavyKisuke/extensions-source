@@ -8,11 +8,9 @@ keiyoushi {
     name = "MangaFire"
     versionCode = 5
     contentWarning = ContentWarning.MIXED
-    // Build against extension-lib 1.4 for compatibility with older Tachimanga builds.
+    // Legacy HttpSource build for compatibility with older Tachimanga/Mihon forks.
     libVersion = "1.4"
 
-    // Publish trigger marker.
-    // Compatibility build after the lib 1.6 IncompatibleClassChangeError.
     source {
         name = "MangaFire"
         lang = "en"
