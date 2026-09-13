@@ -211,3 +211,5 @@ abstract class BatCave2 : KeiSource() {
         val DATE_FORMAT: DateTimeFormatter = DateTimeFormatter.ofPattern("d.M.yyyy")
     }
 }
+
+// Publisher trigger: keep source behavior unchanged while forcing a push event.
