@@ -7,6 +7,7 @@ on:
     paths:
       - 'src/en/mangafire/**'
       - 'src/en/batcave/**'
+      - 'src/en/asurascans/**'
       - 'scripts/**'
       - 'build-logic/**'
       - 'gradle/**'
@@ -38,9 +39,16 @@ env:
   BATCAVE_JAR_NAME: tachiyomi-en.batcave-v1.6.19.jar
   BATCAVE_PACKAGE: eu.kanade.tachiyomi.extension.en.batcave
 
+  ASURA_VERSION_NAME: 1.6.71
+  ASURA_SOURCE_VERSION_CODE: 71
+  ASURA_ANDROID_VERSION_CODE: 106071
+  ASURA_APK_NAME: tachiyomi-en.asurascans-v1.6.71.apk
+  ASURA_JAR_NAME: tachiyomi-en.asurascans-v1.6.71.jar
+  ASURA_PACKAGE: eu.kanade.tachiyomi.extension.en.asurascans
+
 jobs:
   build-and-publish:
-    name: Build and publish MangaFire + BatCave
+    name: Build and publish MangaFire + BatCave + Asura Scans
     runs-on: ubuntu-latest
     timeout-minutes: 40
 
@@ -63,10 +71,10 @@ jobs:
         run: python3 -m pip install --user protobuf
 
       - name: Format sources
-        run: ./gradlew :src:en:mangafire:spotlessApply :src:en:batcave:spotlessApply --no-daemon
+        run: ./gradlew :src:en:mangafire:spotlessApply :src:en:batcave:spotlessApply :src:en:asurascans:spotlessApply --no-daemon
 
       - name: Build release APK and JAR packages
-        run: ./gradlew :src:en:mangafire:clean :src:en:mangafire:assembleRelease :src:en:batcave:clean :src:en:batcave:assembleRelease --no-daemon --stacktrace
+        run: ./gradlew :src:en:mangafire:clean :src:en:mangafire:assembleRelease :src:en:batcave:clean :src:en:batcave:assembleRelease :src:en:asurascans:clean :src:en:asurascans:assembleRelease --no-daemon --stacktrace
 
       - name: Verify packages
         shell: bash
@@ -76,7 +84,9 @@ jobs:
           MF_JAR="$(find src/en/mangafire/build/outputs/jar/release -maxdepth 1 -type f -name '*.jar' | head -n 1)"
           BC_APK="$(find src/en/batcave/build/outputs/apk/release -maxdepth 1 -type f -name '*.apk' | head -n 1)"
           BC_JAR="$(find src/en/batcave/build/outputs/jar/release -maxdepth 1 -type f -name '*.jar' | head -n 1)"
-          test -n "$MF_APK" && test -n "$MF_JAR" && test -n "$BC_APK" && test -n "$BC_JAR"
+          AS_APK="$(find src/en/asurascans/build/outputs/apk/release -maxdepth 1 -type f -name '*.apk' | head -n 1)"
+          AS_JAR="$(find src/en/asurascans/build/outputs/jar/release -maxdepth 1 -type f -name '*.jar' | head -n 1)"
+          test -n "$MF_APK" && test -n "$MF_JAR" && test -n "$BC_APK" && test -n "$BC_JAR" && test -n "$AS_APK" && test -n "$AS_JAR"
           SDK_ROOT="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-$HOME/Android/Sdk}}"
           BUILD_TOOLS="$(find "$SDK_ROOT/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -n 1)"
           AAPT="$BUILD_TOOLS/aapt"
@@ -85,20 +95,27 @@ jobs:
           BC_BADGING="$($AAPT dump badging "$BC_APK")"
           echo "$MF_BADGING"
           echo "$BC_BADGING"
+          AS_BADGING="$("$AAPT" dump badging "$AS_APK")"
+          echo "$AS_BADGING"
           echo "$MF_BADGING" | grep -F "package: name='${MANGAFIRE_PACKAGE}'" >/dev/null
           echo "$MF_BADGING" | grep -F "versionCode='${MANGAFIRE_ANDROID_VERSION_CODE}'" >/dev/null
           echo "$BC_BADGING" | grep -F "package: name='${BATCAVE_PACKAGE}'" >/dev/null
           echo "$BC_BADGING" | grep -F "versionCode='${BATCAVE_ANDROID_VERSION_CODE}'" >/dev/null
+          echo "$AS_BADGING" | grep -F "package: name='${ASURA_PACKAGE}'" >/dev/null
+          echo "$AS_BADGING" | grep -F "versionCode='${ASURA_ANDROID_VERSION_CODE}'" >/dev/null
           CERT_OUTPUT="$($APKSIGNER verify --print-certs "$MF_APK" 2>&1 || true)"
           SIGNING_KEY_FINGERPRINT="$(printf '%s\n' "$CERT_OUTPUT" | grep -m1 -oE '[0-9A-Fa-f]{64}' || true)"
           test -n "$SIGNING_KEY_FINGERPRINT"
           unzip -t "$MF_JAR" >/dev/null
           unzip -t "$BC_JAR" >/dev/null
+          unzip -t "$AS_JAR" >/dev/null
           echo "SIGNING_KEY_FINGERPRINT=$SIGNING_KEY_FINGERPRINT" >> "$GITHUB_ENV"
           echo "MF_APK_PATH=$MF_APK" >> "$GITHUB_ENV"
           echo "MF_JAR_PATH=$MF_JAR" >> "$GITHUB_ENV"
           echo "BC_APK_PATH=$BC_APK" >> "$GITHUB_ENV"
           echo "BC_JAR_PATH=$BC_JAR" >> "$GITHUB_ENV"
+          echo "AS_APK_PATH=$AS_APK" >> "$GITHUB_ENV"
+          echo "AS_JAR_PATH=$AS_JAR" >> "$GITHUB_ENV"
 
       - name: Prepare TachiManga repository
         shell: bash
@@ -116,6 +133,8 @@ jobs:
           cp "$GITHUB_WORKSPACE/$MF_JAR_PATH" "jar/${MANGAFIRE_JAR_NAME}"
           cp "$GITHUB_WORKSPACE/$BC_APK_PATH" "apk/${BATCAVE_APK_NAME}"
           cp "$GITHUB_WORKSPACE/$BC_JAR_PATH" "jar/${BATCAVE_JAR_NAME}"
+          cp "$GITHUB_WORKSPACE/$AS_APK_PATH" "apk/${ASURA_APK_NAME}"
+          cp "$GITHUB_WORKSPACE/$AS_JAR_PATH" "jar/${ASURA_JAR_NAME}"
           python3 "$GITHUB_WORKSPACE/scripts/generate-tachimanga-repo.py" "$SIGNING_KEY_FINGERPRINT" .
           cat > README.md <<'EOF'
           # WavyKisuke TachiManga Extensions
@@ -123,7 +142,7 @@ jobs:
           Recommended repository URL:
           `https://raw.githubusercontent.com/WavyKisuke/extensions-source/repo/repo.json`
 
-          This repository publishes the MangaFire and BatCave TachiManga extensions as both APK and JAR packages.
+          This repository publishes the MangaFire, BatCave, and Asura Scans TachiManga extensions as both APK and JAR packages.
           EOF
           git config user.name "WavyKisuke"
           git config user.email "327378209+WavyKisuke@users.noreply.github.com"
