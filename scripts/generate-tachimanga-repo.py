@@ -39,7 +39,20 @@ BATCAVE = {
     "warning": index_pb2.CONTENT_WARNING_SAFE,
 }
 
-EXTENSIONS = [MANGA_FIRE, BATCAVE]
+ASURA_SCANS = {
+    "name": "Asura Scans",
+    "package": "eu.kanade.tachiyomi.extension.en.asurascans",
+    "source_id": 6247824327199706550,
+    "version_name": "1.6.71",
+    "version_code": 71,
+    "apk_url": "https://raw.githubusercontent.com/WavyKisuke/extensions-source/repo/apk/tachiyomi-en.asurascans-v1.6.71.apk",
+    "jar_url": "https://raw.githubusercontent.com/WavyKisuke/extensions-source/repo/jar/tachiyomi-en.asurascans-v1.6.71.jar",
+    "icon_url": "https://raw.githubusercontent.com/WavyKisuke/extensions-source/main/src/en/asurascans/res/mipmap-xhdpi/ic_launcher.png",
+    "base_url": "https://asurascans.com",
+    "warning": index_pb2.CONTENT_WARNING_SAFE,
+}
+
+EXTENSIONS = [MANGA_FIRE, BATCAVE, ASURA_SCANS]
 
 protobuf_extensions = []
 legacy_extensions = []
