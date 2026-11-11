@@ -48,6 +48,27 @@
             "homeUrl": "https://batcave.biz"
           }
         ]
+      },
+      {
+        "name": "Asura Scans",
+        "packageName": "eu.kanade.tachiyomi.extension.en.asurascans",
+        "resources": {
+          "apkUrl": "https://raw.githubusercontent.com/WavyKisuke/extensions-source/repo/apk/tachiyomi-en.asurascans-v1.6.71.apk",
+          "iconUrl": "https://raw.githubusercontent.com/WavyKisuke/extensions-source/main/src/en/asurascans/res/mipmap-xhdpi/ic_launcher.png",
+          "jarUrl": "https://raw.githubusercontent.com/WavyKisuke/extensions-source/repo/jar/tachiyomi-en.asurascans-v1.6.71.jar"
+        },
+        "extensionLib": "1.6",
+        "versionCode": "71",
+        "versionName": "1.6.71",
+        "contentWarning": "CONTENT_WARNING_SAFE",
+        "sources": [
+          {
+            "id": "6247824327199706550",
+            "name": "Asura Scans",
+            "language": "en",
+            "homeUrl": "https://asurascans.com"
+          }
+        ]
       }
     ]
   }
