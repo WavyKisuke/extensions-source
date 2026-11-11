@@ -36,8 +36,8 @@ env:
   BATCAVE_VERSION_NAME: 1.6.20
   BATCAVE_SOURCE_VERSION_CODE: 20
   BATCAVE_ANDROID_VERSION_CODE: 106020
-  BATCAVE_APK_NAME: tachiyomi-en.batcave-v1.6.19.apk
-  BATCAVE_JAR_NAME: tachiyomi-en.batcave-v1.6.19.jar
+  BATCAVE_APK_NAME: tachiyomi-en.batcave2-v1.6.20.apk
+  BATCAVE_JAR_NAME: tachiyomi-en.batcave2-v1.6.20.jar
   BATCAVE_PACKAGE: eu.kanade.tachiyomi.extension.en.batcave2
 
   ASURA_VERSION_NAME: 1.6.71
