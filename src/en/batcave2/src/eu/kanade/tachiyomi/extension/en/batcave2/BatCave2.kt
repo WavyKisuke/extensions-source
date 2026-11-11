@@ -72,14 +72,14 @@ abstract class BatCave2 : KeiSource() {
             SManga.create().apply {
                 setUrlWithoutDomain(link.absUrl("href"))
                 this.title = title
-                thumbnail_url = card.selectFirst("img[data-src], img[src]")?.let { image ->
-                    image.absUrl(if (image.hasAttr("data-src")) "data-src" else "src")
-                }
+                thumbnail_url = posterUrl(this.url)
             }
         }.distinctBy { it.url }
 
         return MangasPage(items, hasNextPage(doc))
     }
+
+    private fun posterUrl(mangaUrl: String): String = "$baseUrl/uploads/posts/hd/${mangaUrl.substringAfterLast('/').substringBefore('-')}.webp"
 
     private fun hasNextPage(doc: Document): Boolean = doc.select(
         ".pagination a[href], .pagination__pages a[href]",
