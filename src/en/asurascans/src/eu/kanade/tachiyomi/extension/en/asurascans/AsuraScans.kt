@@ -103,7 +103,7 @@ abstract class AsuraScans :
             }
         }.build()
 
-        client.get(url, Fetch.XHR).use { response ->
+        client.get(url, headers, Fetch.XHR).use { response ->
             val result = response.parseAs<DataDto<List<MangaDto>>>()
             val mangas = result.data.orEmpty().map { it.toSManga(baseUrl) }
             return MangasPage(mangas, result.meta!!.hasMore)
@@ -146,12 +146,12 @@ abstract class AsuraScans :
         fetchChapters: Boolean,
     ): SMangaUpdate {
         val url = getMangaUrl(manga)
-        var response = client.get(url, Fetch.DOCUMENT, ensureSuccess = false)
+        var response = client.get(url, headers, Fetch.DOCUMENT, ensureSuccess = false)
 
         // retry without random suffix, it redirects to new random suffix
         if (!response.isSuccessful) {
             response.close()
-            response = client.get(url.replace(URL_RANDOM_PART, ""), Fetch.DOCUMENT)
+            response = client.get(url.replace(URL_RANDOM_PART, ""), headers, Fetch.DOCUMENT)
         }
 
         response.use { response ->
@@ -176,7 +176,7 @@ abstract class AsuraScans :
     override val supportsRelatedMangas get() = true
 
     override suspend fun fetchRelatedMangaList(manga: SManga): List<SManga> {
-        client.get(getMangaUrl(manga), Fetch.DOCUMENT).use { response ->
+        client.get(getMangaUrl(manga), headers, Fetch.DOCUMENT).use { response ->
             val document = response.asJsoup()
 
             return document.select("h2:contains(recommended) + div a[href*=/comics/]").mapNotNull { el ->
@@ -211,7 +211,7 @@ abstract class AsuraScans :
     override suspend fun getPageList(chapter: SChapter): List<Page> {
         val url = getChapterUrl(chapter)
 
-        client.get(url, Fetch.DOCUMENT).use { response ->
+        client.get(url, headers, Fetch.DOCUMENT).use { response ->
             val document = response.asJsoup()
             var pages = try {
                 document.extractAstroProp<PageListDto>("pages").pages
@@ -270,13 +270,13 @@ abstract class AsuraScans :
 
     override suspend fun fetchFilterData(): JsonElement = coroutineScope {
         val genres = async {
-            client.get("$baseUrl/browse", Fetch.DOCUMENT)
+            client.get("$baseUrl/browse", headers, Fetch.DOCUMENT)
                 .extractAstroProp<AvailableGenres>("availableGenres")
                 .availableGenres
         }
 
         val creators = async {
-            client.get("$apiUrl/creators", Fetch.XHR).parseAs<DataDto<Creators>>().data!!
+            client.get("$apiUrl/creators", headers, Fetch.XHR).parseAs<DataDto<Creators>>().data!!
         }
 
         FiltersDto(
