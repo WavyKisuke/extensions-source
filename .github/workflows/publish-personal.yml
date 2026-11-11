@@ -110,7 +110,7 @@ jobs:
           cp "$GITHUB_WORKSPACE/$AS_JAR_PATH" "jar/${ASURA_JAR_NAME}"
           SIGNING_KEY_FINGERPRINT="$(python3 -c 'import json; print(json.load(open("repo.json"))["meta"]["signingKeyFingerprint"])')"
           test -n "$SIGNING_KEY_FINGERPRINT"
-          .venv/bin/python "$GITHUB_WORKSPACE/scripts/generate-tachimanga-repo.py" "$SIGNING_KEY_FINGERPRINT" .
+          "$GITHUB_WORKSPACE/.venv/bin/python" "$GITHUB_WORKSPACE/scripts/generate-tachimanga-repo.py" "$SIGNING_KEY_FINGERPRINT" .
           cat > README.md <<'EOF'
           # WavyKisuke TachiManga Extensions
 
